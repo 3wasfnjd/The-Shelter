@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#1b211e">
+  <title>THE SHELTER — BUNKER 17</title>
+</head>
+<body>
+  <canvas id="game" aria-label="غرفة تحكم الملجأ 17"></canvas>
+  <header id="hud" hidden><span lang="en">THE SHELTER <small>BUNKER 17</small></span><p id="stage"></p></header>
+  <section id="loading" class="overlay" aria-live="polite">
+    <small>THE SHELTER</small><h1>LOADING BUNKER 17</h1>
+    <progress id="progress" max="1" value="0"></progress><p id="loading-status">جارٍ فحص أصول الغرفة…</p>
+    <ul id="missing"></ul><button id="start" hidden>دخول غرفة التحكم</button>
+  </section>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <nav id="modes" hidden aria-label="أوضاع العرض"><button id="vr" disabled>VR</button><button id="ar" disabled>AR</button><button id="mute" aria-pressed="false">الصوت</button></nav>
+  <section id="controls" hidden>
+    <div id="joystick" role="group" aria-label="عصا الحركة"><span id="stick"></span></div>
+    <button id="interact" disabled>تفاعل</button>
+    <p id="help">WASD / الأسهم: حركة · E: تفاعل · انقر لاختيار جهاز · اسحب لتدوير الكاميرا</p>
+  </section>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
