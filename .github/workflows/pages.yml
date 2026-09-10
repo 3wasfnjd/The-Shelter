@@ -1,5 +1,7 @@
 name: Deploy playable Bunker 17 to Pages
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

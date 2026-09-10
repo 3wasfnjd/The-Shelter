@@ -3,14 +3,14 @@ import * as THREE from 'three';
 export class PlayerController {
   constructor(bunker,canvas) {
     this.bunker=bunker; this.position=bunker.player.position; this.keys=new Set(); this.stick=new THREE.Vector2();
-    this.enabled=true; this.angle=Math.PI/4; this.radius=.25; this.camera=new THREE.PerspectiveCamera(35,1,.1,100);
+    this.enabled=true; this.angle=Math.PI/4; this.radius=.25; this.zoom=1; this.camera=new THREE.PerspectiveCamera(35,1,.1,100);
     this.target=new THREE.Vector3(0,0,0); this.forward=new THREE.Vector3(); this.right=new THREE.Vector3(); this.delta=new THREE.Vector3();
     this.mixer=new THREE.AnimationMixer(bunker.player);
     const clips=bunker.models.get('player').animations;
     this.idle=this.mixer.clipAction(clips.find(c=>c.name==='Idle')); this.walk=this.mixer.clipAction(clips.find(c=>c.name==='Walk'));
     this.idle.play(); this.walk.play(); this.walk.setEffectiveWeight(0);
     addEventListener('keydown',event=>{
-      if (['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement?.tagName)) return;
+      if (['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
       if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(event.code)) event.preventDefault();
       this.keys.add(event.code);
     });
@@ -37,6 +37,7 @@ export class PlayerController {
     canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
   }
   clear(){this.keys.clear();this.stick.set(0,0);}
+  focus(position=null){this.target.copy(position??new THREE.Vector3());this.zoom=position?.24:1;}
   canStand(x,z,doorOpen=false) {
     const r=this.radius;
     const inRoom=x>-4.5+r&&x<4.5-r&&z>-5.5+r&&z<5.5-r;
@@ -63,7 +64,7 @@ export class PlayerController {
       const p=new THREE.Vector3(x,y,z).sub(this.target).applyQuaternion(rotation);
       distance=Math.max(distance,p.z+Math.abs(p.x)/(tan*this.camera.aspect)*1.2,p.z+Math.abs(p.y)/tan*1.25);
     }
-    this.camera.position.copy(new THREE.Vector3(0,0,distance).applyQuaternion(this.camera.quaternion).add(this.target));
+    this.camera.position.copy(new THREE.Vector3(0,0,distance*(this.zoom??1)).applyQuaternion(this.camera.quaternion).add(this.target));
     this.camera.updateMatrixWorld();
   }
   update(dt,doorOpen) {

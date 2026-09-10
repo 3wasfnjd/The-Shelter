@@ -9,8 +9,18 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test",
     "check": "node scripts/check.mjs",
-    "check:assets": "node scripts/check-assets.mjs"
+    "check:assets": "node scripts/check-assets.mjs",
+    "assets:import": "node scripts/import-shelter2-assets.mjs",
+    "assets:build": "node scripts/build-puzzle-assets.mjs && python3 scripts/build-audio.py",
+    "check:runtime": "node scripts/audit-runtime.mjs"
   },
-  "dependencies": { "three": "0.180.0" },
-  "devDependencies": { "vite": "7.1.12" }
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.2.1",
+    "@gltf-transform/functions": "^4.2.1",
+    "@napi-rs/canvas": "^0.1.80",
+    "vite": "7.1.12"
+  }
 }

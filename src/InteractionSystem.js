@@ -5,6 +5,16 @@ export class InteractionSystem {
     this.bunker=bunker;this.player=player;this.puzzles=puzzles;this.onFeedback=onFeedback;this.mode='web';
     this.ray=new THREE.Raycaster();this.point=new THREE.Vector3();this.selected=null;this.hover=null;this.materials=[];
     this.button=document.querySelector('#interact');
+    this.focusButton=document.querySelector('#focus');
+    const focus=()=>{
+      if(this.player.zoom<1){this.player.focus();this.focusButton.textContent='تكبير الجهاز';return;}
+      const target=this.hover;if(!target)return;
+      let station=target.object;while(station.parent&&station.parent!==this.bunker.root)station=station.parent;
+      const point=station.getWorldPosition(new THREE.Vector3());point.y=1.3;
+      this.player.focus(point);this.focusButton.textContent='عرض الغرفة';
+    };
+    this.focusButton.addEventListener('click',focus);
+    addEventListener('keydown',event=>{if(this.mode==='web'&&event.code==='KeyF'&&!event.repeat)focus();});
     let down=null;
     canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,time:performance.now()};});
     canvas.addEventListener('pointerup',e=>{
@@ -19,7 +29,7 @@ export class InteractionSystem {
     });
     canvas.addEventListener('pointercancel',()=>{down=null;});
     addEventListener('keydown',e=>{
-      if(this.mode==='web'&&e.code==='KeyE'&&!e.repeat&&!['BUTTON','INPUT','TEXTAREA'].includes(document.activeElement?.tagName))this.activate(this.hover,e.shiftKey?-1:1);
+      if(this.mode==='web'&&e.code==='KeyE'&&!e.repeat&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))this.activate(this.hover,e.shiftKey?-1:1);
     });
     let press=0;
     this.button.addEventListener('pointerdown',()=>{press=performance.now();});
@@ -69,6 +79,6 @@ export class InteractionSystem {
         if(d<distance){distance=d;target=candidate;}
       }
     }
-    this.hover=target;this.button.disabled=!target;this.button.textContent=target?.label??'اقترب من جهاز';this.highlight(target);
+    this.hover=target;this.button.disabled=!target;this.focusButton.disabled=!target&&this.player.zoom===1;this.button.textContent=target?.label??'اقترب من جهاز';this.highlight(target);
   }
 }

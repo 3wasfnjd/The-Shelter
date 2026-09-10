@@ -26,7 +26,7 @@ export class AudioManager {
   update(puzzles) {
     this.voices=this.voices.filter(sound=>{if(sound.isPlaying)return true;sound.disconnect();sound.removeFromParent();return false;});
     this.play(puzzles.escaped?'escape':'ambience',null,true);
-    if(puzzles.power.online){this.play('electrical-hum',new THREE.Vector3(-3,1,2),true);this.play('ventilation',null,true);}
+    if(puzzles.power.online&&!puzzles.escaped){this.play('electrical-hum',new THREE.Vector3(-3,1,2),true);this.play('ventilation',null,true);}
     if(puzzles.power.online&&!puzzles.escaped){
       this.play('pressure',new THREE.Vector3(-3.6,1,-2.3),true);
       const deviation=puzzles.pressure.readings.reduce((sum,value)=>sum+Math.abs(value-50),0)/150;

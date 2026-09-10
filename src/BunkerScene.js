@@ -122,6 +122,6 @@ export class BunkerScene {
     this.rotate('door','ReleaseHandle',puzzles.door.open>0?-.7:0,'x');
     const bolt=Math.min(1,puzzles.door.open*5);
     for(let i=0;i<4;i++) this.translate('door',`Bolt_${i}`,(i%2?1:-1)*bolt*.2);
-    this.translate('door','DoorLeaf',Math.max(0,(puzzles.door.open-.2)/.8)*2.2);
+    this.translate('door','DoorLeaf',-Math.max(0,(puzzles.door.open-.2)/.8)*2.2);
   }
 }

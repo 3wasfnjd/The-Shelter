@@ -24,6 +24,16 @@ async function boot(){
   const {loaded,problems}=await assets.loadSlots(ASSET_SLOTS,value=>{$('#progress').value=value;});
   if(problems.length){
     blocked('أصول الغرفة غير مكتملة. لا تتوفر نسخة قابلة للعب حتى إضافة الموديلات المطلوبة.',problems.map(({slot,message})=>`${slot.file} — ${message}`));
+    if(['shell','props','player'].every(id=>loaded.has(id))){
+      $('#preview-assets').hidden=false;
+      $('#preview-assets').addEventListener('click',async()=>{
+        $('#preview-assets').disabled=true;
+        try{
+          const {startRoomPreview}=await import('./RoomPreview.js');
+          await startRoomPreview(assets,loaded);
+        }catch(error){blocked('تعذر تشغيل معاينة الأصول.',[error.message]);$('#preview-assets').disabled=false;}
+      });
+    }
     return;
   }
   const renderer=new THREE.WebGLRenderer({canvas:$('#game'),antialias:true,alpha:true});
@@ -43,7 +53,7 @@ async function boot(){
     else if(event.error)notice('إدخال غير صحيح — تمت إعادة الضبط.');
   });
   const enterMode=(next,xrCamera)=>{
-    mode=next;camera=xrCamera;player.enabled=false;player.clear();interaction.mode=next;interaction.highlight(null);
+    mode=next;camera=xrCamera;player.enabled=false;player.clear();player.focus();interaction.mode=next;interaction.highlight(null);
     bunker.setMode(next);audio.setCamera(xrCamera);scene.background=next==='ar'?null:new THREE.Color(0x232b27);
     $('#hud').hidden=true;$('#controls').hidden=true;$('#modes').hidden=true;
   };

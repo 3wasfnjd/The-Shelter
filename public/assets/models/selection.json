@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/3wasfnjd/The-Shelter2",
+  "revision": "0082228aaed739f80710dd6e940a4b2ebb63ced7",
+  "selection": {
+    "wall": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Walls/WallAstra_Straight.gltf",
+    "floor": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Platforms/Platform_DarkPlates.gltf",
+    "lower": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Walls/BottomMetal_Straight.gltf",
+    "light": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Light_Wide.gltf",
+    "vent": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Vent_Wide.gltf",
+    "cable": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Cable_3.gltf",
+    "terminal": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Computer.gltf",
+    "access": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_AccessPoint.gltf",
+    "chest": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Chest.gltf",
+    "crate": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Props/Prop_Crate3.gltf",
+    "door": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Platforms/Door_Metal.gltf",
+    "frame": "assets/vendor/quaternius-scifi/Modular SciFi MegaKit[Standard]/glTF/Platforms/Door_Frame_Square.gltf",
+    "desk": "assets/vendor/kenney-furniture/Models/GLTF format/desk.glb",
+    "cabinet": "assets/vendor/kenney-furniture/Models/GLTF format/bookcaseClosedDoors.glb",
+    "shelf": "assets/vendor/kenney-furniture/Models/GLTF format/bookcaseOpen.glb",
+    "radio": "assets/vendor/kenney-furniture/Models/GLTF format/radio.glb",
+    "chair": "assets/vendor/kenney-furniture/Models/GLTF format/chairDesk.glb",
+    "box": "assets/vendor/kenney-furniture/Models/GLTF format/cardboardBoxClosed.glb"
+  },
+  "character": [
+    "assets/kenney/characterMedium.fbx",
+    "assets/kenney/idle.fbx",
+    "assets/kenney/run.fbx",
+    "assets/kenney/humanMaleA.png"
+  ],
+  "adaptations": [
+    "Matte military materials",
+    "Embedded GLB dependencies",
+    "Room assembly",
+    "FBX conversion; Run clip slowed to Walk"
+  ]
+}
