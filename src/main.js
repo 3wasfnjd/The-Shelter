@@ -3,6 +3,7 @@ import './style.css';
 import { ASSET_SLOTS,assetURL } from './assets.js';
 import { AssetManager } from './systems/AssetManager.js';
 import { AudioManager } from './systems/AudioManager.js';
+import { FullscreenManager } from './systems/FullscreenManager.js';
 import { EndingSystem } from './systems/EndingSystem.js';
 import { LightingManager } from './systems/LightingManager.js';
 import { BunkerScene } from './BunkerScene.js';
@@ -65,6 +66,7 @@ async function boot(){
   };
   const vr=new VRManager(renderer,scene,bunker,player,interaction,puzzles,enterMode,exitMode,notice);
   const ar=new ARManager(renderer,bunker,interaction,puzzles,enterMode,exitMode,notice);
+  const fullscreen=new FullscreenManager($('#fullscreen'),notice);
   const ending=new EndingSystem({renderer,player,interaction,audio,imageURL:assetURL('freedom-sunset.webp','images')});
   $('#vr').addEventListener('click',()=>vr.start());$('#ar').addEventListener('click',()=>ar.start());
   $('#mute').addEventListener('click',()=>{$('#mute').setAttribute('aria-pressed',String(audio.mute()));});
@@ -80,6 +82,8 @@ async function boot(){
   $('#start').addEventListener('click',async()=>{
     if(started)return;started=true;$('#loading').hidden=true;$('#hud').hidden=false;$('#controls').hidden=false;$('#modes').hidden=false;
     $('#stage').textContent=puzzles.stage;
+    // Request within the click gesture, before any awaits consume activation.
+    void fullscreen.enter();
     await audio.unlock().catch(()=>{});await audio.load();
     if(audio.missing.length)notice('بعض ملفات الصوت غير متوفرة.');
   },{once:true});

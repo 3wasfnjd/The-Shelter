@@ -1,0 +1,11 @@
+{
+  "name": "THE SHELTER — BUNKER 17",
+  "short_name": "Bunker 17",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1b211e",
+  "theme_color": "#1b211e",
+  "lang": "ar",
+  "dir": "rtl"
+}

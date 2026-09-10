@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#1b211e">
   <title>THE SHELTER — BUNKER 17</title>
 </head>
@@ -17,7 +21,7 @@
   </section>
   <p id="notice" role="status" aria-live="polite"></p>
   <button id="back-preview" hidden style="position:fixed;left:16px;top:16px">العودة</button>
-  <nav id="modes" hidden aria-label="أوضاع العرض"><button id="vr" disabled>VR</button><button id="ar" disabled>AR</button><button id="mute" aria-pressed="false">الصوت</button></nav>
+  <nav id="modes" hidden aria-label="أوضاع العرض"><button id="vr" disabled>VR</button><button id="ar" disabled>AR</button><button id="fullscreen" aria-pressed="false">ملء الشاشة</button><button id="mute" aria-pressed="false">الصوت</button></nav>
   <section id="controls" hidden>
     <div id="joystick" role="group" aria-label="عصا الحركة"><span id="stick"></span></div>
     <button id="interact" disabled>تفاعل</button>
