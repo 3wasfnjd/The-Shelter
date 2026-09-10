@@ -5,7 +5,6 @@ export class InteractionSystem {
   constructor(bunker,player,puzzles,canvas,onFeedback) {
     this.bunker=bunker;this.player=player;this.puzzles=puzzles;this.onFeedback=onFeedback;this.mode='web';
     this.ray=new THREE.Raycaster();this.point=new THREE.Vector3();this.selected=null;this.hover=null;this.materials=[];
-    this.button=document.querySelector('#interact');
     this.focusButton=document.querySelector('#focus');
     this.card=document.querySelector('#context-card');this.cardTitle=document.querySelector('#context-title');this.cardHint=document.querySelector('#context-hint');
     const focus=()=>{
@@ -43,9 +42,7 @@ export class InteractionSystem {
     addEventListener('keydown',e=>{
       if(this.mode==='web'&&e.code==='KeyE'&&!e.repeat&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))this.activate(this.hover,e.shiftKey?-1:1);
     });
-    let press=0;
-    this.button.addEventListener('pointerdown',()=>{press=performance.now();});
-    this.button.addEventListener('click',()=>{this.activate(this.hover,performance.now()-press>450?-1:1);press=0;});
+
   }
   visible(object){for(let node=object;node;node=node.parent)if(!node.visible)return false;return true;}
   pick(ray) {
@@ -99,8 +96,7 @@ export class InteractionSystem {
     this.cardHint.textContent=prompt?.hint??'';this.cardHint.hidden=!prompt?.hint;
     this.focusButton.textContent=focused?'×':'فحص الجهاز';
     this.focusButton.setAttribute('aria-label',focused?'إنهاء فحص الجهاز':'فحص الجهاز');
-    this.button.hidden=!focused||!target;this.button.disabled=!target;
-    this.focusButton.disabled=!target&&!focused;this.button.textContent=prompt?.label??'';
+    this.focusButton.disabled=!target&&!focused;
     this.hover=target;this.highlight(target);
   }
 }
