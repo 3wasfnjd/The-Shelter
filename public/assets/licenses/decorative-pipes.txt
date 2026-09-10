@@ -1,0 +1,8 @@
+[Low Poly] Electrical Wires/Pipe Set — Zillious
+Author: https://sketchfab.com/zillious
+Source: https://sketchfab.com/3d-models/low-poly-electrical-wirespipe-set-a27f48661109481d803576eeba9f9a53
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Source GLB supplied by the user; attribution and license are recorded in asset.extras.
+Changes: kept the example assembly, removed the parts catalogue, centered,
+scaled and rotated for the bunker wall; textures resized to at most 512 pixels.
+No endorsement by the original artist is implied.

@@ -10,6 +10,7 @@ export const ASSET_SLOTS = [
   { id: 'door', file: 'blast-door.glb', position: [2.65,0,-5.4], nodes: ['DoorLeaf','SafetyLock','LockingWheel','ReleaseHandle',...sequence('Bolt_',4),...sequence('Key_',10),'KeyClear','KeyDisplay','PowerLamp','PressureLamp','SecurityLamp','ExitLamp'], description: 'Blast door in 2.1 m opening, keyed mechanical interlocks, retractable bolts, separate moving leaf and wheel' },
   { id: 'props', file: 'survival-props.glb', position: [0,0,0], nodes: [], description: 'Purpose-placed extinguisher, ventilation grilles, survival kit, maintenance props; no scattered random objects' },
   { id: 'wire-decoration', file: 'decorative-wires.glb', position: [-4.25,2.45,3.9], nodes: ['DecorativeWireBundle'], description: 'One static wall-mounted bundle near the generator; noninteractive artwork by romullus, CC BY-SA 4.0' },
+  { id: 'pipe-decoration', file: 'decorative-pipes.glb', position: [-1.8,2.7,-5.39], nodes: ['DecorativePipeNetwork'], description: 'Static wall pipe network behind the control area; Zillious, CC BY 4.0' },
   { id: 'player', file: 'bunker-technician.glb', position: [0,0,3.8], nodes: [], animations: ['Idle','Walk'], description: 'Kenney 1.7 m stylized character facing +Z, skinned with Idle/Walk clips, feet at origin' },
 ];
 
