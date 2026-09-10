@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {TouchJoystick} from './systems/TouchJoystick.js';
 
 export class PlayerController {
   constructor(bunker,canvas) {
@@ -18,34 +19,24 @@ export class PlayerController {
     addEventListener('keyup',event=>this.keys.delete(event.code));
     addEventListener('blur',()=>this.clear());
     document.addEventListener('visibilitychange',()=>{if(document.hidden)this.clear();});
-    const joy=document.querySelector('#joystick'),knob=document.querySelector('#stick');
-    let joyId=null;
-    const move=event=>{
-      if(event.pointerId!==joyId)return;
-      const rect=joy.getBoundingClientRect();this.stick.set((event.clientX-rect.left-rect.width/2)/38,(event.clientY-rect.top-rect.height/2)/38).clampLength(0,1);
-      knob.style.transform=`translate(${this.stick.x*34}px,${this.stick.y*34}px)`;
-    };
-    joy.addEventListener('pointerdown',event=>{joyId=event.pointerId;joy.setPointerCapture(joyId);move(event);});
-    joy.addEventListener('pointermove',move);
-    const release=()=>{joyId=null;this.stick.set(0,0);knob.style.transform='';};
-    joy.addEventListener('pointerup',release);joy.addEventListener('pointercancel',release);joy.addEventListener('lostpointercapture',release);
+    this.touchJoystick=new TouchJoystick(canvas,document.querySelector('#joystick'),document.querySelector('#stick'),this.stick,()=>this.enabled);
     const viewButton=document.querySelector('#room-view');
     viewButton.addEventListener('click',()=>{
       this.overview=!this.overview;this.focus();
       viewButton.textContent=this.overview?'متابعة الشخصية':'عرض الغرفة كاملة';
       viewButton.setAttribute('aria-pressed',String(this.overview));
-      this.followTarget.lerp(new THREE.Vector3(this.position.x,1.2,this.position.z),1-Math.exp(-dt*7));
+      this.followTarget.set(this.position.x,1.2,this.position.z);
       this.resize(innerWidth,innerHeight);
     });
     let drag=null;
-    canvas.addEventListener('pointerdown',event=>{if(this.enabled)drag={id:event.pointerId,x:event.clientX};});
+    canvas.addEventListener('pointerdown',event=>{if(this.enabled&&event.pointerType!=='touch')drag={id:event.pointerId,x:event.clientX};});
     canvas.addEventListener('pointermove',event=>{
       if(!drag||drag.id!==event.pointerId||!this.enabled)return;
       this.angle=THREE.MathUtils.clamp(this.angle+(event.clientX-drag.x)*.003,Math.PI/6,Math.PI/3);drag.x=event.clientX;
     });
     canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
   }
-  clear(){this.keys.clear();this.stick.set(0,0);}
+  clear(){this.keys.clear();this.stick.set(0,0);this.touchJoystick?.clear();}
   focus(bounds=null,angle=this.angle){
     this.focusBounds=bounds?.clone()??null;this.focusAngle=bounds?angle:null;
     if(bounds)bounds.getCenter(this.target);else this.target.set(0,0,0);

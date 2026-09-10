@@ -26,9 +26,10 @@ export class InteractionSystem {
     this.focusButton.addEventListener('click',focus);
     addEventListener('keydown',event=>{if(this.mode==='web'&&event.code==='KeyF'&&!event.repeat)focus();});
     let down=null;
-    canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,time:performance.now()};});
+    canvas.addEventListener('pointerdown',e=>{if(!down)down={id:e.pointerId,x:e.clientX,y:e.clientY,time:performance.now()};});
     canvas.addEventListener('pointerup',e=>{
-      if(this.mode!=='web'||!down)return;
+      if(!down||down.id!==e.pointerId)return;
+      if(this.mode!=='web'||(e.pointerType==='touch'&&player.touchJoystick.moved)){down=null;return;}
       if(Math.hypot(e.clientX-down.x,e.clientY-down.y)<7){
         const rect=canvas.getBoundingClientRect();
         this.ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),player.camera);
@@ -37,7 +38,8 @@ export class InteractionSystem {
       }
       down=null;
     });
-    canvas.addEventListener('pointercancel',()=>{down=null;});
+    canvas.addEventListener('pointercancel',e=>{if(down?.id===e.pointerId)down=null;});
+    canvas.addEventListener('lostpointercapture',e=>{if(down?.id===e.pointerId)down=null;});
     addEventListener('keydown',e=>{
       if(this.mode==='web'&&e.code==='KeyE'&&!e.repeat&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))this.activate(this.hover,e.shiftKey?-1:1);
     });
