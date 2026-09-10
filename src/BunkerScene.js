@@ -18,6 +18,12 @@ export class BunkerScene {
         this.colliders.push({ x0:x+x0,z0:z+z0,x1:x+x1,z1:z+z1 });
       }
     }
+    // These existing GLB props were authored relative to the original workbench origin.
+    const deskOffset=this.models.get('workbench').root.position.clone().sub(new THREE.Vector3(.2,0,.2));
+    for(const name of ['Radio','TechnicianChair']){
+      const prop=this.models.get('props').root.getObjectByName(name);
+      if(prop)prop.position.add(deskOffset);
+    }
     this.player = this.models.get('player').root;
     this.exit = new THREE.Vector3(2.65,0,-6.35);
     this.registerInteractions();

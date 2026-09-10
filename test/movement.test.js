@@ -6,7 +6,7 @@ import { PlayerController } from '../src/PlayerController.js';
 function controller(){
   const player=Object.create(PlayerController.prototype);
   player.radius=.25;player.bunker={colliders:[{x0:-1,z0:-.6,x1:1,z1:.6}]};
-  player.target=new THREE.Vector3();player.angle=Math.PI/4;player.camera=new THREE.PerspectiveCamera(35,1,.1,100);return player;
+  player.target=new THREE.Vector3();player.angle=Math.PI/4;player.camera=new THREE.PerspectiveCamera(28,1,.1,150);return player;
 }
 test('movement slides along blockers and cannot tunnel through workbench',()=>{
   const player=controller(),position=new THREE.Vector3(0,0,2);
@@ -40,4 +40,13 @@ test('focused controls fit portrait and landscape without using full-room distan
     }
     player.focus();assert.equal(player.focusBounds,null);assert.equal(player.zoom,1);
   }
+});
+
+
+test('reference composition uses a lower angle and centers the room volume',()=>{
+  const player=controller();player.resize(1536,1024);
+  const direction=player.camera.position.clone().sub(player.target);
+  const elevation=Math.atan2(direction.y,Math.hypot(direction.x,direction.z))*180/Math.PI;
+  assert.ok(elevation>34&&elevation<36);
+  assert.deepEqual(player.target.toArray(),[0,1.9,-.6]);
 });
