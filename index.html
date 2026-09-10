@@ -9,64 +9,15 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#1b211e">
   <title>THE SHELTER — BUNKER 17</title>
-  <style>
-    /* Loading screen only. Kept inline so it renders before the game bundle loads. */
-    #loading.loading-screen{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;isolation:isolate;padding:24px;background:radial-gradient(circle at 50% 42%,rgba(117,145,137,.13) 0,rgba(21,27,27,.42) 28%,rgba(5,7,8,.97) 70%),linear-gradient(180deg,#0b0f10 0%,#050607 100%);color:#e8ece9;text-align:center}
-    #loading.loading-screen::before{content:"";position:absolute;inset:0;z-index:-2;opacity:.22;background-image:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.018) 3px 4px),linear-gradient(90deg,rgba(151,179,166,.04) 1px,transparent 1px),linear-gradient(rgba(151,179,166,.035) 1px,transparent 1px);background-size:auto,64px 64px,64px 64px;animation:shelter-scan 8s linear infinite}
-    #loading.loading-screen::after{content:"";position:absolute;inset:18px;border:1px solid rgba(180,202,190,.12);pointer-events:none;box-shadow:inset 0 0 90px rgba(0,0,0,.42)}
-    #loading .loading-sweep{position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 25%,rgba(179,202,190,.032) 50%,transparent 75%);transform:translateX(-65%);animation:shelter-sweep 5.5s ease-in-out infinite;pointer-events:none}
-    #loading .loading-shell{width:min(88vw,560px);display:flex;flex-direction:column;align-items:center;padding:28px 30px;position:relative;z-index:1}
-    #loading .loading-studio{margin-bottom:24px;font-size:10px;font-weight:700;letter-spacing:.34em;color:rgba(207,218,211,.52);direction:ltr}
-    #loading .loading-mark{position:relative;width:82px;height:82px;display:grid;place-items:center;margin-bottom:18px;border:1px solid rgba(177,201,189,.32);transform:rotate(45deg);box-shadow:0 0 0 5px rgba(149,177,163,.025),0 0 36px rgba(101,148,127,.08)}
-    #loading .loading-mark::before,#loading .loading-mark::after{content:"";position:absolute;background:rgba(188,208,198,.36)}
-    #loading .loading-mark::before{width:18px;height:1px;left:-9px;top:50%}
-    #loading .loading-mark::after{height:18px;width:1px;top:-9px;left:50%}
-    #loading .loading-mark span{transform:rotate(-45deg);font:800 26px/1 system-ui,sans-serif;letter-spacing:.04em;color:#d7dfda;text-shadow:0 0 18px rgba(156,199,177,.2)}
-    #loading .loading-logo{font-size:clamp(28px,7vw,48px);line-height:1;font-weight:800;letter-spacing:.19em;text-indent:.19em;color:#eef1ef;text-shadow:0 5px 26px rgba(0,0,0,.55);direction:ltr}
-    #loading .loading-ar{margin-top:9px;font-size:15px;font-weight:600;letter-spacing:.18em;color:rgba(209,218,213,.66)}
-    #loading .loading-rule{width:min(70%,330px);display:flex;align-items:center;gap:10px;margin:25px auto 22px;direction:ltr}
-    #loading .loading-rule span{height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(174,198,186,.32))}
-    #loading .loading-rule span:last-child{background:linear-gradient(90deg,rgba(174,198,186,.32),transparent)}
-    #loading .loading-rule i{width:5px;height:5px;border:1px solid rgba(188,211,199,.48);transform:rotate(45deg)}
-    #loading #progress{appearance:none;-webkit-appearance:none;width:min(430px,82vw);height:4px;border:0;border-radius:0;overflow:hidden;background:rgba(163,184,173,.13)}
-    #loading #progress::-webkit-progress-bar{background:rgba(163,184,173,.13)}
-    #loading #progress::-webkit-progress-value{background:linear-gradient(90deg,#708d7f,#d2dfd8);box-shadow:0 0 13px rgba(181,213,196,.3);transition:width .2s ease}
-    #loading #progress::-moz-progress-bar{background:linear-gradient(90deg,#708d7f,#d2dfd8);box-shadow:0 0 13px rgba(181,213,196,.3)}
-    #loading #loading-status{margin:13px 0 0;max-width:460px;font-size:12px;font-weight:600;line-height:1.65;color:rgba(214,223,218,.72)}
-    #loading #missing{width:min(460px,84vw);max-height:22vh;margin:12px 0 0;padding:0 20px;overflow:auto;text-align:left;direction:ltr;font-size:11px;color:#d6b789}
-    #loading #start,#loading #preview-assets{margin-top:18px;min-width:190px;border:1px solid rgba(171,197,183,.46);background:rgba(28,39,34,.92);color:#edf2ef;border-radius:4px;padding:11px 18px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
-    #loading #preview-assets{margin-top:9px;background:rgba(23,31,28,.8);color:#c8d3cd}
-    #loading .loading-boot{display:flex;align-items:center;gap:8px;margin-top:18px;font-size:8px;font-weight:700;letter-spacing:.18em;color:rgba(188,205,196,.38);direction:ltr}
-    #loading .loading-pulse{width:5px;height:5px;border-radius:50%;background:#9cc2ad;box-shadow:0 0 8px rgba(154,199,175,.7);animation:shelter-pulse 1.25s ease-in-out infinite}
-    #loading .loading-code{position:absolute;font-size:8px;font-weight:650;letter-spacing:.16em;color:rgba(189,205,197,.22);direction:ltr}
-    #loading .loading-code-a{left:34px;bottom:31px}#loading .loading-code-b{right:34px;top:31px}
-    @keyframes shelter-pulse{0%,100%{opacity:.28;transform:scale(.82)}50%{opacity:1;transform:scale(1.15)}}
-    @keyframes shelter-sweep{0%,100%{transform:translateX(-65%);opacity:.25}50%{transform:translateX(65%);opacity:.7}}
-    @keyframes shelter-scan{from{background-position:0 0,0 0,0 0}to{background-position:0 28px,0 0,0 0}}
-    @media(max-width:600px){#loading.loading-screen{padding:16px}#loading.loading-screen::after{inset:10px}#loading .loading-shell{width:94vw;padding:22px 20px}#loading .loading-studio{margin-bottom:20px}#loading .loading-mark{width:68px;height:68px;margin-bottom:16px}#loading .loading-mark span{font-size:22px}#loading .loading-logo{font-size:clamp(27px,9vw,38px);letter-spacing:.13em;text-indent:.13em}#loading .loading-ar{font-size:13px}#loading .loading-rule{margin:21px auto 20px}#loading .loading-code{font-size:7px}#loading .loading-code-a{left:18px;bottom:17px}#loading .loading-code-b{right:18px;top:17px}}
-    @media(prefers-reduced-motion:reduce){#loading.loading-screen::before,#loading .loading-sweep,#loading .loading-pulse{animation:none!important}}
-  </style>
 </head>
 <body>
   <canvas id="game" aria-label="غرفة تحكم الملجأ 17"></canvas>
   <header id="hud" hidden><span lang="en">THE SHELTER <small>BUNKER 17</small></span><p id="stage"></p></header>
-  <section id="loading" class="overlay loading-screen" aria-live="polite">
-    <div class="loading-sweep" aria-hidden="true"></div>
-    <div class="loading-shell">
-      <div class="loading-studio">ABODEN GAMES</div>
-      <div class="loading-mark" aria-hidden="true"><span>17</span></div>
-      <div class="loading-logo">THE SHELTER</div>
-      <div class="loading-ar">المخبأ</div>
-      <div class="loading-rule" aria-hidden="true"><span></span><i></i><span></span></div>
-      <progress id="progress" max="1" value="0"></progress>
-      <p id="loading-status">جارٍ فحص أصول الغرفة…</p>
-      <ul id="missing"></ul>
-      <button id="start" hidden>دخول غرفة التحكم</button>
-      <button id="preview-assets" hidden>معاينة الغرفة والشخصية</button>
-      <div class="loading-boot"><span class="loading-pulse"></span><span>SYSTEM BOOT // BUNKER 17</span></div>
-    </div>
-    <div class="loading-code loading-code-a" aria-hidden="true">SECURE FACILITY // 017</div>
-    <div class="loading-code loading-code-b" aria-hidden="true">ACCESS LEVEL // RESTRICTED</div>
+  <section id="loading" class="overlay" aria-live="polite">
+    <small>THE SHELTER</small><h1>LOADING BUNKER 17</h1>
+    <progress id="progress" max="1" value="0"></progress><p id="loading-status">جارٍ فحص أصول الغرفة…</p>
+    <ul id="missing"></ul><button id="start" hidden>دخول غرفة التحكم</button>
+    <button id="preview-assets" hidden>معاينة الغرفة والشخصية</button>
   </section>
   <p id="notice" role="status" aria-live="polite"></p>
   <button id="back-preview" hidden style="position:fixed;left:16px;top:16px">العودة</button>
