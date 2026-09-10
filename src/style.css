@@ -39,3 +39,5 @@ html,body,button,#controls,#modes,#context-card{touch-action:manipulation}
 #joystick{display:none;pointer-events:none;bottom:auto;width:92px;height:92px;transform:translate(-50%,-50%);opacity:1}
 #joystick[data-active="true"]{display:block}
 #joystick #stick{left:26px;top:26px}
+
+.ending-copy .ending-credit{font-size:13px;color:#eed39b;margin:0 0 12px}

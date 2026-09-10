@@ -50,7 +50,13 @@ async function boot(){
   const interaction=new InteractionSystem(bunker,player,puzzles,$('#game'),(event,target)=>{
     if(event.ok)bunker.feedback(target);
     const world=target.object.getWorldPosition(new THREE.Vector3());audio.feedback(event,bunker.root.worldToLocal(world));
-    if(event.clue)notice(`${event.clue.label}: ${event.clue.symbol} — ${event.clue.order}`);
+    if(event.clue){
+      let next='';
+      if(puzzles.evidence.complete)next='اكتملت الأدلة — توجه إلى لوحة التحكم وأدخل الرموز بترتيب الأرقام.';
+      else if(['operations','memo'].includes(event.clue.id))next=!puzzles.evidence.found.has('memo')?'الدليل الثاني داخل درج المكتب.':'تابع البحث عند سجل الصيانة وخزانة الطوارئ.';
+      else next=!puzzles.evidence.found.has('emergency')?'الدليل الثاني داخل خزانة الطوارئ.':'تابع البحث في المكتب والدرج.';
+      notice(`${event.clue.label}: ${event.clue.symbol} — ${event.clue.order} · ${next}`);
+    }
     else if(!event.ok)notice('هذا الإجراء غير متاح الآن — افحص الأنظمة السابقة.');
     else if(event.error)notice('إدخال غير صحيح — تمت إعادة الضبط.');
   });

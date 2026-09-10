@@ -4,8 +4,22 @@ export function interactionPrompt(action,p,bunker={}) {
   const {type,id,value}=action;
   if(type==='power')return p.power.online?null:{title:'لوحة الطاقة',label:'أدر قطعة التوصيل',hint:'صل مصدر الطاقة بالمصباح.'};
   if(type==='pressure')return !p.power.online||p.pressure.stable?null:{title:'صمامات الضغط',label:'أدر الصمام',hint:'الهدف 45–55 PSI · ضغطة مطولة للعكس.'};
-  if(type==='evidence')return !p.pressure.stable?null:{title:'الأدلة',label:'افحص الدليل',hint:'لاحظ الرمز ورقم ترتيبه.'};
-  if(type==='prop')return {title:id==='locker'?'خزانة الطوارئ':'درج المكتب',label:(id==='locker'?bunker.lockerOpen:bunker.drawerOpen)?'أغلق':'افتح',hint:''};
+  if(type==='evidence'||type==='prop'){
+    if(!p.pressure.stable||p.evidence.complete)return null;
+    const desk=['operations','memo','drawer'].includes(id);
+    const first=desk?'operations':'maintenance',second=desk?'memo':'emergency';
+    const found=p.evidence.found,open=desk?bunker.drawerOpen:bunker.lockerOpen;
+    if(found.has(first)&&found.has(second))return null;
+    const title=desk?'أدلة المكتب والدرج':'أدلة الصيانة والطوارئ';
+    if(!found.has(first))return type==='evidence'&&id===first
+      ?{title,label:desk?'افحص كتاب العمليات':'افحص سجل الصيانة',hint:desk?'ابدأ بكتاب العمليات على المكتب.':'ابدأ بسجل الصيانة بجانب خزانة الطوارئ.'}:null;
+    const hint=desk?'يوجد دليل آخر داخل درج المكتب.':'يوجد دليل آخر داخل خزانة الطوارئ.';
+    if(!found.has(second)){
+      if(type==='prop'&&!open)return {title,label:desk?'افتح الدرج':'افتح الخزانة',hint};
+      if(type==='evidence'&&id===second&&open)return {title,label:'افحص الدليل الثاني',hint};
+    }
+    return null;
+  }
   if(type==='symbol'||type==='reset'){
     if(!p.evidence.complete||p.control.authorized||(type==='reset'&&!p.control.entry.length))return null;
     return {title:'لوحة التحكم',label:type==='reset'?'مسح الرموز':`اضغط ${action.symbol}`,hint:'أدخل الرموز حسب ترتيب الأدلة.'};

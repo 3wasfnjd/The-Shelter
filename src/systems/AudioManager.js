@@ -15,7 +15,7 @@ export class AudioManager {
     if(this.buffers.has('music')&&!this.music){
       // A soundtrack belongs to the listener, independent of camera distance or XR scale.
       this.music=new THREE.Audio(this.listener);
-      this.music.setBuffer(this.buffers.get('music')).setLoop(true).setVolume(.12);
+      this.music.setBuffer(this.buffers.get('music')).setLoop(true).setVolume(.24);
       this.music.play();
     }
   }
@@ -25,7 +25,7 @@ export class AudioManager {
   play(id,position=null,loop=false) {
     if(!this.buffers.has(id)||this.voices.length>=16||this.loops.has(id))return;
     const sound=new THREE.PositionalAudio(this.listener);sound.setBuffer(this.buffers.get(id));
-    sound.setRefDistance(2);sound.setMaxDistance(18);sound.setRolloffFactor(.7);sound.setVolume(loop?.12:.35);sound.setLoop(loop);
+    sound.setRefDistance(2);sound.setMaxDistance(18);sound.setRolloffFactor(.7);sound.setVolume(loop?.045:.28);sound.setLoop(loop);
     if(position)sound.position.copy(position);else sound.position.set(0,1.5,0);
     this.root.add(sound);this.voices.push(sound);if(loop)this.loops.set(id,sound);sound.play();
   }
@@ -36,7 +36,7 @@ export class AudioManager {
     if(puzzles.power.online&&!puzzles.escaped){
       this.play('pressure',new THREE.Vector3(-3.6,1,-2.3),true);
       const deviation=puzzles.pressure.readings.reduce((sum,value)=>sum+Math.abs(value-50),0)/150;
-      this.loops.get('pressure')?.setVolume(.04+Math.min(1,deviation)*.1);
+      this.loops.get('pressure')?.setVolume(.015+Math.min(1,deviation)*.035);
     }
     if(puzzles.escaped)for(const [id,sound] of this.loops)if(id!=='escape'){sound.stop();this.loops.delete(id);}
   }
