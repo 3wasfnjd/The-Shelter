@@ -37,8 +37,8 @@ export class PlayerController {
     canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
   }
   clear(){this.keys.clear();this.stick.set(0,0);}
-  focus(bounds=null){
-    this.focusBounds=bounds?.clone()??null;
+  focus(bounds=null,angle=this.angle){
+    this.focusBounds=bounds?.clone()??null;this.focusAngle=bounds?angle:null;
     if(bounds)bounds.getCenter(this.target);else this.target.set(0,0,0);
     this.zoom=bounds?.24:1;
   }
@@ -60,7 +60,8 @@ export class PlayerController {
   resize(width,height) {
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();
     // Fit all shell corners, including portrait screens, at every allowed camera azimuth.
-    this.camera.position.set(Math.sin(this.angle)*25,24,Math.cos(this.angle)*25).add(this.target);this.camera.lookAt(this.target);
+    const angle=this.focusAngle??this.angle;
+    this.camera.position.set(Math.sin(angle)*25,24,Math.cos(angle)*25).add(this.target);this.camera.lookAt(this.target);
     this.camera.updateMatrixWorld();
     const rotation=this.camera.quaternion.clone().invert();let distance=1;
     const tan=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));

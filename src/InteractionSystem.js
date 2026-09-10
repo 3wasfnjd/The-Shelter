@@ -18,7 +18,7 @@ export class InteractionSystem {
       }
       if(bounds.isEmpty())return;
       bounds.expandByScalar(.22);
-      this.player.focus(bounds);this.focusButton.textContent='عرض الغرفة';
+      this.player.focus(bounds,station.rotation.y+Math.PI/8);this.focusButton.textContent='عرض الغرفة';
     };
     this.focusButton.addEventListener('click',focus);
     addEventListener('keydown',event=>{if(this.mode==='web'&&event.code==='KeyF'&&!event.repeat)focus();});

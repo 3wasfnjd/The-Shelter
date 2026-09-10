@@ -30,9 +30,9 @@ test('full room fits desktop/mobile frustums at both rotation limits',()=>{
 test('focused controls fit portrait and landscape without using full-room distance',()=>{
   const player=controller();
   const bounds=new THREE.Box3(new THREE.Vector3(-3.8,.8,1.7),new THREE.Vector3(-3.1,2.4,3.2));
-  for(const [width,height] of [[1440,900],[390,844],[844,390]]){
+  for(const [width,height] of [[1440,900],[390,844],[844,390]])for(const angle of [-Math.PI/2,0,Math.PI/2]){
     player.focus();player.resize(width,height);const roomDistance=player.camera.position.distanceTo(player.target);
-    player.focus(bounds);player.resize(width,height);
+    player.focus(bounds,angle+Math.PI/8);player.resize(width,height);
     assert.ok(player.camera.position.distanceTo(player.target)<roomDistance*.5);
     for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
       const point=new THREE.Vector3(x,y,z).project(player.camera);
