@@ -1,0 +1,8 @@
+Background soundtrack: same sector_0.mp3 URL used by The-Shelter2/src/main.js.
+Source repository: https://github.com/3wasfnjd/The-Shelter2
+Source revision inspected: 0082228aaed739f80710dd6e940a4b2ebb63ced7
+Original download: https://opengameart.org/sites/default/files/sector_0.mp3
+Local file: sector-0.mp3; transcoded to 96 kbps MP3 using FFmpeg.
+Duration: 56.920816 seconds. File size: 683408 bytes.
+The source workflow calls this CC0, but the author and license were not
+independently verified. This provenance note does not assert a license grant.

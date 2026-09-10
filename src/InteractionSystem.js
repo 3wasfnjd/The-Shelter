@@ -10,8 +10,15 @@ export class InteractionSystem {
       if(this.player.zoom<1){this.player.focus();this.focusButton.textContent='تكبير الجهاز';return;}
       const target=this.hover;if(!target)return;
       let station=target.object;while(station.parent&&station.parent!==this.bunker.root)station=station.parent;
-      const point=station.getWorldPosition(new THREE.Vector3());point.y=1.3;
-      this.player.focus(point);this.focusButton.textContent='عرض الغرفة';
+      // Frame the actual controls, not the room shell or the furniture origin.
+      const bounds=new THREE.Box3();
+      for(const candidate of this.bunker.targets){
+        let group=candidate.object;while(group.parent&&group.parent!==this.bunker.root)group=group.parent;
+        if(group===station&&this.visible(candidate.object))bounds.expandByObject(candidate.object);
+      }
+      if(bounds.isEmpty())return;
+      bounds.expandByScalar(.22);
+      this.player.focus(bounds);this.focusButton.textContent='عرض الغرفة';
     };
     this.focusButton.addEventListener('click',focus);
     addEventListener('keydown',event=>{if(this.mode==='web'&&event.code==='KeyF'&&!event.repeat)focus();});
@@ -79,6 +86,7 @@ export class InteractionSystem {
         if(d<distance){distance=d;target=candidate;}
       }
     }
+    this.focusButton.textContent=this.player.focusBounds?'عرض الغرفة':'تكبير الجهاز';
     this.hover=target;this.button.disabled=!target;this.focusButton.disabled=!target&&this.player.zoom===1;this.button.textContent=target?.label??'اقترب من جهاز';this.highlight(target);
   }
 }

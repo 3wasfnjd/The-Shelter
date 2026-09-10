@@ -15,7 +15,7 @@ export const ASSET_SLOTS = [
 export const AUDIO_SLOTS = [
   'ambience','generator-start','electrical-hum','ventilation','relay','valve','pressure',
   'confirm','error','keypad','bolts','door','escape',
-].map(id => ({ id, file: `${id}.wav` }));
+].map(id => ({ id, file: `${id}.wav` })).concat({id:'music',file:'sector-0.mp3'});
 
 export function assetURL(file, kind = 'models') {
   return `${import.meta.env.BASE_URL}assets/${kind}/${file}`;

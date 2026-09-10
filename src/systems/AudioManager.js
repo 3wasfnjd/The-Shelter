@@ -12,6 +12,12 @@ export class AudioManager {
       try{this.buffers.set(slot.id,await loader.loadAsync(assetURL(slot.file,'audio')));}
       catch{this.missing.push(slot.file);}
     }));
+    if(this.buffers.has('music')&&!this.music){
+      // A soundtrack belongs to the listener, independent of camera distance or XR scale.
+      this.music=new THREE.Audio(this.listener);
+      this.music.setBuffer(this.buffers.get('music')).setLoop(true).setVolume(.12);
+      this.music.play();
+    }
   }
   async unlock(){await this.listener.context.resume();}
   setCamera(camera){camera.add(this.listener);}

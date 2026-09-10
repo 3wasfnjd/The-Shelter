@@ -37,7 +37,11 @@ export class PlayerController {
     canvas.addEventListener('pointerup',()=>{drag=null;});canvas.addEventListener('pointercancel',()=>{drag=null;});
   }
   clear(){this.keys.clear();this.stick.set(0,0);}
-  focus(position=null){this.target.copy(position??new THREE.Vector3());this.zoom=position?.24:1;}
+  focus(bounds=null){
+    this.focusBounds=bounds?.clone()??null;
+    if(bounds)bounds.getCenter(this.target);else this.target.set(0,0,0);
+    this.zoom=bounds?.24:1;
+  }
   canStand(x,z,doorOpen=false) {
     const r=this.radius;
     const inRoom=x>-4.5+r&&x<4.5-r&&z>-5.5+r&&z<5.5-r;
@@ -56,15 +60,16 @@ export class PlayerController {
   resize(width,height) {
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();
     // Fit all shell corners, including portrait screens, at every allowed camera azimuth.
-    this.camera.position.set(Math.sin(this.angle)*25,24,Math.cos(this.angle)*25);this.camera.lookAt(this.target);
+    this.camera.position.set(Math.sin(this.angle)*25,24,Math.cos(this.angle)*25).add(this.target);this.camera.lookAt(this.target);
     this.camera.updateMatrixWorld();
     const rotation=this.camera.quaternion.clone().invert();let distance=1;
     const tan=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));
-    for(const x of [-4.8,4.8])for(const y of [0,3.8])for(const z of [-7,5.8]){
+    const bounds=this.focusBounds??new THREE.Box3(new THREE.Vector3(-4.8,0,-7),new THREE.Vector3(4.8,3.8,5.8));
+    for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
       const p=new THREE.Vector3(x,y,z).sub(this.target).applyQuaternion(rotation);
       distance=Math.max(distance,p.z+Math.abs(p.x)/(tan*this.camera.aspect)*1.2,p.z+Math.abs(p.y)/tan*1.25);
     }
-    this.camera.position.copy(new THREE.Vector3(0,0,distance*(this.zoom??1)).applyQuaternion(this.camera.quaternion).add(this.target));
+    this.camera.position.copy(new THREE.Vector3(0,0,distance).applyQuaternion(this.camera.quaternion).add(this.target));
     this.camera.updateMatrixWorld();
   }
   update(dt,doorOpen) {
@@ -75,6 +80,7 @@ export class PlayerController {
       this.forward.set(-Math.sin(this.angle),0,-Math.cos(this.angle));this.right.set(Math.cos(this.angle),0,-Math.sin(this.angle));
       this.delta.copy(this.right).multiplyScalar(x).addScaledVector(this.forward,-y);
       if(this.delta.lengthSq()>.001){
+        if(this.focusBounds)this.focus();
         this.delta.clampLength(0,1).multiplyScalar(dt*2.2);this.move(this.position,this.delta,doorOpen);
         this.bunker.player.rotation.y=Math.atan2(this.delta.x,this.delta.z);moving=true;
       }
