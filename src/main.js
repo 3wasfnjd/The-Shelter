@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import './style.css';
-import { ASSET_SLOTS } from './assets.js';
+import { ASSET_SLOTS,assetURL } from './assets.js';
 import { AssetManager } from './systems/AssetManager.js';
 import { AudioManager } from './systems/AudioManager.js';
+import { EndingSystem } from './systems/EndingSystem.js';
 import { LightingManager } from './systems/LightingManager.js';
 import { BunkerScene } from './BunkerScene.js';
 import { PlayerController } from './PlayerController.js';
@@ -58,12 +59,13 @@ async function boot(){
     $('#hud').hidden=true;$('#controls').hidden=true;$('#modes').hidden=true;
   };
   const exitMode=()=>{
-    mode='web';camera=player.camera;player.enabled=true;interaction.mode='web';bunker.setMode('web');
-    audio.setCamera(camera);scene.background=new THREE.Color(0x232b27);$('#hud').hidden=false;$('#controls').hidden=false;$('#modes').hidden=false;
+    mode='web';camera=player.camera;player.enabled=!ending.active;interaction.mode=ending.active?'ending':'web';bunker.setMode('web');
+    audio.setCamera(camera);scene.background=new THREE.Color(0x232b27);$('#hud').hidden=ending.active;$('#controls').hidden=ending.active;$('#modes').hidden=ending.active;
     renderer.setSize(innerWidth,innerHeight);player.resize(innerWidth,innerHeight);
   };
   const vr=new VRManager(renderer,scene,bunker,player,interaction,puzzles,enterMode,exitMode,notice);
   const ar=new ARManager(renderer,bunker,interaction,puzzles,enterMode,exitMode,notice);
+  const ending=new EndingSystem({renderer,player,interaction,audio,imageURL:assetURL('freedom-sunset.webp','images')});
   $('#vr').addEventListener('click',()=>vr.start());$('#ar').addEventListener('click',()=>ar.start());
   $('#mute').addEventListener('click',()=>{$('#mute').setAttribute('aria-pressed',String(audio.mute()));});
   for(const [id,type] of [['vr','immersive-vr'],['ar','immersive-ar']]){
@@ -84,11 +86,12 @@ async function boot(){
   let last=0;
   renderer.setAnimationLoop((time,frame)=>{
     const dt=Math.min(last?(time-last)/1000:0,.05);last=time;if(!started)return;
+    if(ending.active){renderer.render(scene,camera);return;}
     interaction.highlight(null); // Restore materials before applying this frame's state.
     puzzles.update(dt);player.update(dt,puzzles.door.phase==='OPEN');
     if(mode==='ar')ar.update(frame);
     if(mode==='web'&&player.position.x>1.85&&player.position.x<3.45&&player.position.z< -6.1&&!puzzles.escaped)puzzles.dispatch({type:'escape'});
-    bunker.sync(puzzles,dt);lighting.update(puzzles,dt,mode);if(mode==='vr')vr.update(dt);interaction.update();audio.update(puzzles);
+    bunker.sync(puzzles,dt);lighting.update(puzzles,dt,mode);if(mode==='vr')vr.update(dt);interaction.update();audio.update(puzzles);void ending.update(puzzles);
     renderer.render(scene,camera);
   });
 }
