@@ -90,6 +90,7 @@ async function boot(){
     $('#stage').textContent=puzzles.stage;
     // Request within the click gesture, before any awaits consume activation.
     void fullscreen.enter();
+    audio.enterRoom();
     await audio.unlock().catch(()=>{});await audio.load();
     if(audio.missing.length)notice('بعض ملفات الصوت غير متوفرة.');
   },{once:true});

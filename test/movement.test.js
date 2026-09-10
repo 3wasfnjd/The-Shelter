@@ -5,6 +5,7 @@ import { PlayerController } from '../src/PlayerController.js';
 
 function controller(){
   const player=Object.create(PlayerController.prototype);
+  player.keys=new Set();player.stick=new THREE.Vector2();
   player.radius=.25;player.bunker={colliders:[{x0:-1,z0:-.6,x1:1,z1:.6}]};
   player.target=new THREE.Vector3();player.angle=Math.PI/4;player.camera=new THREE.PerspectiveCamera(28,1,.1,150);return player;
 }
@@ -66,4 +67,13 @@ test('close camera keeps character visible and holds distance across the room',(
       }
     }
   }
+});
+
+test('entering puzzle focus clears movement and stale drag suppression',()=>{
+ const player=controller();let cleared=false;
+ player.keys.add('KeyW');player.stick.set(1,1);
+ player.touchJoystick={moved:true,clear(){cleared=true;}};
+ player.focus(new THREE.Box3(new THREE.Vector3(),new THREE.Vector3(1,1,1)));
+ assert.equal(cleared,true);assert.equal(player.keys.size,0);assert.equal(player.stick.length(),0);assert.equal(player.touchJoystick.moved,false);
+ player.focus();assert.equal(player.focusBounds,null);
 });

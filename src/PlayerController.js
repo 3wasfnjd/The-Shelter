@@ -19,7 +19,7 @@ export class PlayerController {
     addEventListener('keyup',event=>this.keys.delete(event.code));
     addEventListener('blur',()=>this.clear());
     document.addEventListener('visibilitychange',()=>{if(document.hidden)this.clear();});
-    this.touchJoystick=new TouchJoystick(canvas,document.querySelector('#joystick'),document.querySelector('#stick'),this.stick,()=>this.enabled);
+    this.touchJoystick=new TouchJoystick(canvas,document.querySelector('#joystick'),document.querySelector('#stick'),this.stick,()=>this.enabled&&!this.focusBounds);
     const viewButton=document.querySelector('#room-view');
     viewButton.addEventListener('click',()=>{
       this.overview=!this.overview;this.focus();
@@ -38,6 +38,8 @@ export class PlayerController {
   }
   clear(){this.keys.clear();this.stick.set(0,0);this.touchJoystick?.clear();}
   focus(bounds=null,angle=this.angle){
+    this.clear();
+    if(this.touchJoystick)this.touchJoystick.moved=false;
     this.focusBounds=bounds?.clone()??null;this.focusAngle=bounds?angle:null;
     if(bounds)bounds.getCenter(this.target);else this.target.set(0,0,0);
     this.zoom=bounds?.24:1;
@@ -89,7 +91,7 @@ export class PlayerController {
       const y=Number(this.keys.has('KeyS')||this.keys.has('ArrowDown'))-Number(this.keys.has('KeyW')||this.keys.has('ArrowUp'))+this.stick.y;
       this.forward.set(-Math.sin(this.angle),0,-Math.cos(this.angle));this.right.set(Math.cos(this.angle),0,-Math.sin(this.angle));
       this.delta.copy(this.right).multiplyScalar(x).addScaledVector(this.forward,-y);
-      if(this.delta.lengthSq()>.001){
+      if(!this.focusBounds&&this.delta.lengthSq()>.001){
         if(this.focusBounds)this.focus();
         this.delta.clampLength(0,1).multiplyScalar(dt*2.2);this.move(this.position,this.delta,doorOpen);
         this.bunker.player.rotation.y=Math.atan2(this.delta.x,this.delta.z);moving=true;
