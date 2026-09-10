@@ -18,7 +18,7 @@ export class InteractionSystem {
       }
       if(bounds.isEmpty())return;
       bounds.expandByScalar(.22);
-      this.player.focus(bounds,station.rotation.y+Math.PI/8);this.focusButton.textContent='عرض الغرفة';
+      this.player.focus(bounds,station.rotation.y+Math.PI/8);this.focusButton.textContent='إنهاء التكبير';
     };
     this.focusButton.addEventListener('click',focus);
     addEventListener('keydown',event=>{if(this.mode==='web'&&event.code==='KeyF'&&!event.repeat)focus();});
@@ -86,7 +86,7 @@ export class InteractionSystem {
         if(d<distance){distance=d;target=candidate;}
       }
     }
-    this.focusButton.textContent=this.player.focusBounds?'عرض الغرفة':'تكبير الجهاز';
+    this.focusButton.textContent=this.player.focusBounds?'إنهاء التكبير':'تكبير الجهاز';
     this.hover=target;this.button.disabled=!target;this.focusButton.disabled=!target&&this.player.zoom===1;this.button.textContent=target?.label??'اقترب من جهاز';this.highlight(target);
   }
 }

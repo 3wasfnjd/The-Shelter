@@ -50,3 +50,20 @@ test('reference composition uses a lower angle and centers the room volume',()=>
   assert.ok(elevation>34&&elevation<36);
   assert.deepEqual(player.target.toArray(),[0,1.9,-.6]);
 });
+
+
+test('close camera keeps character visible and holds distance across the room',()=>{
+  const player=controller();player.overview=false;
+  for(const [width,height] of [[844,268],[390,664],[1440,900]]){
+    let distance;
+    for(const [x,z] of [[0,3.8],[-3,2],[3,.7],[2.65,-6.3]]){
+      player.followTarget=new THREE.Vector3(x,1.2,z);player.resize(width,height);
+      const current=player.camera.position.distanceTo(player.target);
+      if(distance)assert.ok(Math.abs(current-distance)<1e-9);distance=current;
+      for(const y of [0,1.7]){
+        const point=new THREE.Vector3(x,y,z).project(player.camera);
+        assert.ok(Math.abs(point.x)<1&&Math.abs(point.y)<1&&Math.abs(point.z)<1);
+      }
+    }
+  }
+});

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 export class PlayerController {
   constructor(bunker,canvas) {
     this.bunker=bunker; this.position=bunker.player.position; this.keys=new Set(); this.stick=new THREE.Vector2();
+    this.overview=false; this.followTarget=this.position.clone().setY(1.2);
     this.enabled=true; this.angle=Math.PI/4; this.radius=.25; this.zoom=1; this.camera=new THREE.PerspectiveCamera(28,1,.1,150);
     this.target=new THREE.Vector3(0,0,0); this.forward=new THREE.Vector3(); this.right=new THREE.Vector3(); this.delta=new THREE.Vector3();
     this.mixer=new THREE.AnimationMixer(bunker.player);
@@ -28,6 +29,14 @@ export class PlayerController {
     joy.addEventListener('pointermove',move);
     const release=()=>{joyId=null;this.stick.set(0,0);knob.style.transform='';};
     joy.addEventListener('pointerup',release);joy.addEventListener('pointercancel',release);joy.addEventListener('lostpointercapture',release);
+    const viewButton=document.querySelector('#room-view');
+    viewButton.addEventListener('click',()=>{
+      this.overview=!this.overview;this.focus();
+      viewButton.textContent=this.overview?'متابعة الشخصية':'عرض الغرفة كاملة';
+      viewButton.setAttribute('aria-pressed',String(this.overview));
+      this.followTarget.lerp(new THREE.Vector3(this.position.x,1.2,this.position.z),1-Math.exp(-dt*7));
+      this.resize(innerWidth,innerHeight);
+    });
     let drag=null;
     canvas.addEventListener('pointerdown',event=>{if(this.enabled)drag={id:event.pointerId,x:event.clientX};});
     canvas.addEventListener('pointermove',event=>{
@@ -60,7 +69,10 @@ export class PlayerController {
   resize(width,height) {
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();
     // Center the occupied volume rather than the floor: a tighter reference-style diorama.
-    if(!this.focusBounds)this.target.set(0,1.9,-.6);
+    if(!this.focusBounds){
+      if(this.overview===false)this.target.copy(this.followTarget);
+      else this.target.set(0,1.9,-.6);
+    }
     // Fit all shell corners, including portrait screens, at every allowed camera azimuth.
     const angle=this.focusAngle??this.angle;
     this.camera.position.set(Math.sin(angle)*25,17.5,Math.cos(angle)*25).add(this.target);this.camera.lookAt(this.target);
@@ -73,6 +85,9 @@ export class PlayerController {
       const p=new THREE.Vector3(x,y,z).sub(this.target).applyQuaternion(rotation);
       distance=Math.max(distance,p.z+Math.abs(p.x)/(tan*this.camera.aspect)*margin,p.z+Math.abs(p.y)/tan*margin);
     }
+    // Close play deliberately crops distant room edges; overview retains the full-room fit.
+    // Keep distance independent of player location so walking does not pump the zoom.
+    if(!this.focusBounds&&this.overview===false)distance=Math.max(14,8/this.camera.aspect);
     this.camera.position.copy(new THREE.Vector3(0,0,distance).applyQuaternion(this.camera.quaternion).add(this.target));
     this.camera.updateMatrixWorld();
   }
@@ -88,6 +103,7 @@ export class PlayerController {
         this.delta.clampLength(0,1).multiplyScalar(dt*2.2);this.move(this.position,this.delta,doorOpen);
         this.bunker.player.rotation.y=Math.atan2(this.delta.x,this.delta.z);moving=true;
       }
+      this.followTarget.lerp(new THREE.Vector3(this.position.x,1.2,this.position.z),1-Math.exp(-dt*7));
       this.resize(innerWidth,innerHeight);
     }
     this.walk.setEffectiveWeight(moving?1:0);this.idle.setEffectiveWeight(moving?0:1);this.mixer.update(dt);
