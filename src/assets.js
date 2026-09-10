@@ -9,6 +9,7 @@ export const ASSET_SLOTS = [
   { id: 'console', file: 'control-console.glb', position: [-.9,0,-4.55], nodes: [...sequence('Symbol_',4),'ResetButton','CRTScreen','SecurityIndicator'], collider: [-1.3,-.5,1.3,.5], description: 'Chunky military console, CRT with mapped screen, separate III △ ✕ ○ buttons, reset and lamps' },
   { id: 'door', file: 'blast-door.glb', position: [2.65,0,-5.4], nodes: ['DoorLeaf','SafetyLock','LockingWheel','ReleaseHandle',...sequence('Bolt_',4),...sequence('Key_',10),'KeyClear','KeyDisplay','PowerLamp','PressureLamp','SecurityLamp','ExitLamp'], description: 'Blast door in 2.1 m opening, keyed mechanical interlocks, retractable bolts, separate moving leaf and wheel' },
   { id: 'props', file: 'survival-props.glb', position: [0,0,0], nodes: [], description: 'Purpose-placed extinguisher, ventilation grilles, survival kit, maintenance props; no scattered random objects' },
+  { id: 'wire-decoration', file: 'decorative-wires.glb', position: [-4.25,2.45,3.9], nodes: ['DecorativeWireBundle'], description: 'One static wall-mounted bundle near the generator; noninteractive artwork by romullus, CC BY-SA 4.0' },
   { id: 'player', file: 'bunker-technician.glb', position: [0,0,3.8], nodes: [], animations: ['Idle','Walk'], description: 'Kenney 1.7 m stylized character facing +Z, skinned with Idle/Walk clips, feet at origin' },
 ];
 

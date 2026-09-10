@@ -1,0 +1,9 @@
+Bunch of Electric Wires — romullus
+Author: https://sketchfab.com/romullus
+Source: https://sketchfab.com/3d-models/bunch-of-electric-wires-b45c18880f9147429394274411e97dc8
+License: CC BY-SA 4.0
+https://creativecommons.org/licenses/by-sa/4.0/
+Original GLB supplied by the user; attribution and license recorded in its asset.extras.
+Changes: centered, uniformly scaled, and reoriented for wall mounting.
+Modified decorative-wires.glb is distributed under the same CC BY-SA 4.0 license.
+No endorsement by the original author is implied.
