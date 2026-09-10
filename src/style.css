@@ -31,3 +31,6 @@
 #context-card[data-focused="true"] #focus{position:absolute;left:4px;top:2px;right:auto;bottom:auto;width:44px;font-size:23px;border:0;background:transparent;padding:0}
 #context-card[data-focused="true"] #interact{margin-top:8px}
 @media(max-height:450px){#context-card{padding:8px;width:210px}#context-hint{margin:4px 0}#context-title{font-size:12px}}
+/* Prevent browser double-tap zoom on the page and HUD; canvas keeps its own gestures. */
+html,body,button,#controls,#modes,#context-card{touch-action:manipulation}
+#controls,#modes{user-select:none;-webkit-user-select:none}
