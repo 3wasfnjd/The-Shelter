@@ -50,7 +50,7 @@ function label(a,name,text,w,h,pos,parent=a.scene,opts={}){
 }
 function lamp(a,name,pos,parent=a.scene){return slab(a,name,.1,.07,.04,pos,'red',parent,.01);}
 function bolts(a,parent,x,y,z){for(const dx of [-x,x])for(const dy of [-y,y])slab(a,'Rivet',.035,.035,.035,[dx,dy,z],'edge',parent,.006);}
-async function save(a,name){await a.doc.transform(dedup(),prune(),unpartition());await io.write(`${out}/${name}.glb`,a.doc);}
+async function save(a,name){if(process.env.BUNKER_ASSET_ONLY&&process.env.BUNKER_ASSET_ONLY!==name)return;await a.doc.transform(dedup(),prune(),unpartition());await io.write(`${out}/${name}.glb`,a.doc);}
 // Backing sheets close the modular kit's structural gaps without changing its authored ribs.
 {
  const doc=await io.read(out+'/bunker-shell.glb');
@@ -71,15 +71,32 @@ async function save(a,name){await a.doc.transform(dedup(),prune(),unpartition())
  const a=asset();slab(a,'Generator',.95,.68,.75,[0,.34,-.06],'olive');
  for(let i=0;i<6;i++)slab(a,'GeneratorVent',.6,.025,.03,[0,.18+i*.075,.33],'dark');
  wheel(a,'GeneratorRotor',.16,[0,.4,.36],a.scene,'edge');
- slab(a,'PowerCabinet',1.12,1.03,.16,[0,1.38,0],'steel');bolts(a,a.scene,.5,.4,.1);
+ slab(a,'PowerCabinet',1.85,1.27,.16,[0,1.44,0],'steel');bolts(a,a.scene,.5,.4,.1);
  const ports=[[1,3],[2,3],[0,2],[0,1],[0,1],[1,3]];
  for(let i=0;i<6;i++){
  const tile=slab(a,`Module_${i}`,.30,.30,.08,[-.35+(i%3)*.35,1.65-Math.floor(i/3)*.35,.13],'edge');
  const trace=node(a,`Trace_${i}`,tile,[0,0,.051]);
- for(const port of ports[i])rod(a,`Conductor_${i}_${port}`,[[0,0,0],[[0,.15,0],[.15,0,0],[0,-.15,0],[-.15,0,0]][port]],.023,'yellow',trace,6);
+ for(const port of ports[i])rod(a,`Conductor_${i}_${port}`,[[0,0,0],[[0,.175,0],[.175,0,0],[0,-.175,0],[-.175,0,0]][port]],.023,'yellow',trace,6);
  }
- label(a,'GeneratorLabel','GENERATOR  >',.55,.14,[-.30,.94,.105]);label(a,'OutputLabel','> CONTROL',.45,.14,[.32,.94,.105]);
- label(a,'PowerTitle','01  /  POWER BUS',1.1,.18,[0,2.0,.12]);lamp(a,'PowerIndicator',[.47,1.99,.14]);
+ // A fixed source enters module 0 from the west; the final lamp exits module 5 east.
+ const battery=slab(a,'SourceBattery',.18,.27,.10,[-.73,1.65,.16],'olive');
+ slab(a,'BatteryCap',.08,.035,.06,[0,.15,0],'edge',battery);
+ label(a,'BatteryPlus','+',.10,.10,[0,.03,.055],battery,{fontSize:110});
+ rod(a,'SourceLead',[[-.635,1.65,.181],[-.525,1.65,.181]],.026,'yellow');
+ label(a,'SourceLabel','البداية\nمصدر الطاقة',.47,.22,[-.65,1.94,.105],a.scene,{fontSize:62});
+ label(a,'SourceArrow','>',.09,.09,[-.57,1.79,.105],a.scene,{fontSize:100});
+ rod(a,'OutputLead',[[.525,1.30,.181],[.68,1.30,.181]],.026,'yellow');
+ const bulb=node(a,'OutputBulb',a.scene,[.77,1.32,.19]);
+ const positions=[],indices=[],rings=[[-.045,.035],[0,.07],[.07,.09],[.13,.065],[.16,.015]];
+ for(const [y,r]of rings)for(let j=0;j<10;j++){const angle=j/10*Math.PI*2;positions.push(r*Math.cos(angle),y,r*Math.sin(angle));}
+ for(let i=0;i<rings.length-1;i++)for(let j=0;j<10;j++){const u=i*10+j,v=i*10+(j+1)%10;indices.push(u,v,v+10,u,v+10,u+10);}
+ for(let j=1;j<9;j++)indices.push(40,40+j,41+j);
+ bulb.setMesh(mesh(a,'BulbGlass',positions,indices,'cream'));
+ slab(a,'BulbSocket',.10,.07,.10,[.77,1.245,.19],'steel');
+ label(a,'OutputLabel','النهاية\nإضاءة الملجأ',.48,.23,[.64,1.01,.105],a.scene,{fontSize:62});
+ label(a,'PowerInstruction','أدر القطع لتوصيل الضوء',1.32,.14,[0,.74,.105],a.scene,{fontSize:52});
+ slab(a,'PowerHeader',1.85,.20,.10,[0,2.20,0],'steel');
+ label(a,'PowerTitle','01  /  POWER BUS',1.55,.18,[0,2.20,.12]);lamp(a,'PowerIndicator',[.82,2.20,.14]);
  await save(a,'power-station');
 }
 // PRESSURE: purpose-authored bent pipe mesh, individual valve wheels and needles.

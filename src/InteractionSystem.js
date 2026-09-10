@@ -16,6 +16,7 @@ export class InteractionSystem {
         let group=candidate.object;while(group.parent&&group.parent!==this.bunker.root)group=group.parent;
         if(group===station&&this.visible(candidate.object))bounds.expandByObject(candidate.object);
       }
+      if(target.action.type==='power')bounds.expandByObject(this.bunker.node('power','PowerCabinet'));
       if(bounds.isEmpty())return;
       bounds.expandByScalar(.22);
       this.player.focus(bounds,station.rotation.y+Math.PI/8);this.focusButton.textContent='إنهاء التكبير';
@@ -75,6 +76,7 @@ export class InteractionSystem {
   }
   update() {
     if(this.mode!=='web')return;
+    this.bunker.player.visible=!this.player.focusBounds;
     // A selected fine control stays selected until out of reach. Otherwise choose nearest visible control.
     let target=this.reachable(this.selected)?this.selected:null;
     if(!target){

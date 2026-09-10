@@ -73,6 +73,15 @@ export class BunkerScene {
       }
     });
   }
+  powerGlow(name,active){
+    this.node('power',name)?.traverse(object=>{
+      if(!object.isMesh)return;
+      for(const m of Array.isArray(object.material)?object.material:[object.material]){
+        m.color.setHex(active?0xffcb69:0x5a4430);
+        m.emissive?.setHex(active?0xffb642:0x000000);m.emissiveIntensity=active?1.2:0;
+      }
+    });
+  }
   rotate(id,name,value,axis='z') {
     const node=this.node(id,name);
     node.userData.restRotation ??= node.rotation.clone();
@@ -106,7 +115,9 @@ export class BunkerScene {
       item.object.position.z-=Math.sin(item.time/.2*Math.PI)*.015;return true;
     });
     const connected=puzzles.power.connected();
-    for (let i=0;i<6;i++) { this.rotate('power',`Module_${i}`,-puzzles.power.turns[i]*Math.PI/2); this.light('power',`Trace_${i}`,connected.includes(i),0x000000); }
+    for (let i=0;i<6;i++) { this.rotate('power',`Module_${i}`,-puzzles.power.turns[i]*Math.PI/2); this.powerGlow(`Trace_${i}`,connected.includes(i)); }
+    this.powerGlow('SourceLead',true);
+    this.powerGlow('OutputLead',puzzles.power.online);this.powerGlow('OutputBulb',puzzles.power.online);
     this.light('power','PowerIndicator',puzzles.power.online);
     puzzles.pressure.readings.forEach((psi,i)=>{
       this.rotate('pressure',`Valve_${i}`,-puzzles.pressure.valves[i]*Math.PI/3);

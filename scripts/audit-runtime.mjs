@@ -12,7 +12,7 @@ globalThis.createImageBitmap=async blob=>loadImage(Buffer.from(await blob.arrayB
 globalThis.ProgressEvent=class{constructor(type,init){Object.assign(this,{type},init)}};
 globalThis.document={createElement:()=>createCanvas(1024,512)};
 const loader=new GLTFLoader(),loaded=new Map();
-for(const slot of ASSET_SLOTS){const bytes=await readFile('public/assets/models/'+slot.file);const gltf=await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');loaded.set(slot.id,{root:gltf.scene,animations:gltf.animations});}
+for(const slot of ASSET_SLOTS){const bytes=await readFile('public/assets/models/'+slot.file);const gltf=await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');gltf.scene.traverse(o=>{if(o.isMesh)o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();});loaded.set(slot.id,{root:gltf.scene,animations:gltf.animations});}
 const scene=new THREE.Scene(),bunker=new BunkerScene(scene,loaded),puzzles=new PuzzleManager();bunker.setMode('web');bunker.sync(puzzles,0);
 const mixer=new THREE.AnimationMixer(bunker.player);for(const name of ['Idle','Walk']){
  mixer.stopAllAction();mixer.clipAction(loaded.get('player').animations.find(c=>c.name===name)).play();
@@ -53,3 +53,11 @@ if(process.argv.includes('--render')){
  }
  await writeFile(process.env.BUNKER_AUDIT_IMAGE??'/tmp/bunker17-room-audit.png',canvas.toBuffer('image/png'));
 }
+
+// Exercise the authored lamp and terminals through the real shared puzzle state.
+const glow=name=>{let intensity; bunker.node('power',name).traverse(o=>{if(o.isMesh)intensity=o.material.emissiveIntensity;});return intensity;};
+if(!(glow('SourceLead')>0)||glow('OutputBulb')!==0)throw Error('Power terminal initial feedback is wrong');
+for(const index of [0,1,4])for(let i=0;i<3;i++)puzzles.dispatch({type:'power',index});
+bunker.sync(puzzles,0);
+if(!puzzles.power.online||!(glow('OutputBulb')>0)||!(glow('OutputLead')>0))throw Error('Power lamp must light after a complete source-to-output path');
+console.log('Power source and final lamp feedback: PASS');
