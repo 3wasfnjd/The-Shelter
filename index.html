@@ -24,10 +24,14 @@
   <nav id="modes" hidden aria-label="أوضاع العرض"><button id="vr" disabled>VR</button><button id="ar" disabled>AR</button><button id="fullscreen" aria-pressed="false">ملء الشاشة</button><button id="mute" aria-pressed="false">الصوت</button></nav>
   <section id="controls" hidden>
     <div id="joystick" role="group" aria-label="عصا الحركة"><span id="stick"></span></div>
-    <button id="interact" disabled>تفاعل</button>
+
     <button id="room-view" aria-pressed="false">عرض الغرفة كاملة</button>
-    <button id="focus" disabled>تكبير الجهاز</button>
-    <p id="help">WASD / الأسهم: حركة · E: تفاعل · انقر لاختيار جهاز · اسحب لتدوير الكاميرا</p>
+    <aside id="context-card" hidden aria-label="التفاعل مع الجهاز" data-focused="false">
+      <strong id="context-title"></strong><p id="context-hint"></p>
+      <button id="focus" disabled>فحص الجهاز</button>
+      <button id="interact" hidden disabled>تفاعل</button>
+    </aside>
+
   </section>
   <section id="ending" hidden aria-labelledby="ending-title">
     <img id="ending-image" alt="الناجي من الخلف أمام وادٍ أخضر ونهر وغروب ذهبي بعد الخروج من الملجأ" decoding="async">

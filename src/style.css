@@ -24,3 +24,10 @@
 @keyframes ending-reveal{from{opacity:0}to{opacity:1}}
 @media(max-height:450px){.ending-copy{padding-bottom:max(10px,env(safe-area-inset-bottom))}.ending-copy h1{font-size:24px;margin:5px 0}.ending-copy p{margin-bottom:8px}.ending-copy small{display:none}#ending-image{object-position:50% 44%}}
 @media(prefers-reduced-motion:reduce){#ending{animation:none}}
+
+#context-card{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:min(250px,calc(100vw - 130px));padding:12px;border:1px solid #89927580;border-radius:10px;background:#18281ee8;color:#eee8d4;box-shadow:0 4px 16px #0003}
+#context-title{display:block;font-size:13px;padding-left:32px}#context-hint{font-size:11px;line-height:1.5;margin:6px 0 10px;color:#c9d0b8}
+#context-card #focus,#context-card #interact{position:static;min-width:0;max-width:none;width:100%;font-size:12px;padding:8px;min-height:44px}
+#context-card[data-focused="true"] #focus{position:absolute;left:4px;top:2px;right:auto;bottom:auto;width:44px;font-size:23px;border:0;background:transparent;padding:0}
+#context-card[data-focused="true"] #interact{margin-top:8px}
+@media(max-height:450px){#context-card{padding:8px;width:210px}#context-hint{margin:4px 0}#context-title{font-size:12px}}

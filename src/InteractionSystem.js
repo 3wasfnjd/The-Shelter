@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {interactionPrompt} from './systems/InteractionPrompt.js';
 
 export class InteractionSystem {
   constructor(bunker,player,puzzles,canvas,onFeedback) {
@@ -6,6 +7,7 @@ export class InteractionSystem {
     this.ray=new THREE.Raycaster();this.point=new THREE.Vector3();this.selected=null;this.hover=null;this.materials=[];
     this.button=document.querySelector('#interact');
     this.focusButton=document.querySelector('#focus');
+    this.card=document.querySelector('#context-card');this.cardTitle=document.querySelector('#context-title');this.cardHint=document.querySelector('#context-hint');
     const focus=()=>{
       if(this.player.zoom<1){this.player.focus();this.focusButton.textContent='تكبير الجهاز';return;}
       const target=this.hover;if(!target)return;
@@ -78,17 +80,25 @@ export class InteractionSystem {
     if(this.mode!=='web')return;
     this.bunker.player.visible=!this.player.focusBounds;
     // A selected fine control stays selected until out of reach. Otherwise choose nearest visible control.
-    let target=this.reachable(this.selected)?this.selected:null;
+    let target=this.selected&&interactionPrompt(this.selected.action,this.puzzles,this.bunker)&&this.reachable(this.selected)?this.selected:null;
     if(!target){
       let distance=Infinity;
       for(const candidate of this.bunker.targets){
-        if(!this.reachable(candidate))continue;
+        if(!interactionPrompt(candidate.action,this.puzzles,this.bunker)||!this.reachable(candidate))continue;
         candidate.object.getWorldPosition(this.point);
         const d=this.point.distanceToSquared(this.bunker.player.position);
         if(d<distance){distance=d;target=candidate;}
       }
     }
-    this.focusButton.textContent=this.player.focusBounds?'إنهاء التكبير':'تكبير الجهاز';
-    this.hover=target;this.button.disabled=!target;this.focusButton.disabled=!target&&this.player.zoom===1;this.button.textContent=target?.label??'اقترب من جهاز';this.highlight(target);
+    const focused=!!this.player.focusBounds;
+    const prompt=target?interactionPrompt(target.action,this.puzzles,this.bunker):null;
+    this.card.hidden=!target&&!focused;this.card.dataset.focused=String(focused);
+    this.cardTitle.textContent=prompt?.title??'اكتمل الإجراء';
+    this.cardHint.textContent=prompt?.hint??'';this.cardHint.hidden=!prompt?.hint;
+    this.focusButton.textContent=focused?'×':'فحص الجهاز';
+    this.focusButton.setAttribute('aria-label',focused?'إنهاء فحص الجهاز':'فحص الجهاز');
+    this.button.hidden=!focused||!target;this.button.disabled=!target;
+    this.focusButton.disabled=!target&&!focused;this.button.textContent=prompt?.label??'';
+    this.hover=target;this.highlight(target);
   }
 }
