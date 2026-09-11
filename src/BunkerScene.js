@@ -104,7 +104,7 @@ export class BunkerScene {
     this.animated.push({object,rest:object.position.clone(),time:0});
   }
   setMode(mode) {
-    this.player.visible=mode==='web';
+    this.player.visible=mode!=='vr';
     this.node('shell','FrontWall').visible=mode==='vr';
     this.node('shell','Roof').visible=mode==='vr';
   }

@@ -99,8 +99,8 @@ async function boot(){
     const dt=Math.min(last?(time-last)/1000:0,.05);last=time;if(!started)return;
     if(ending.active){renderer.render(scene,camera);return;}
     interaction.highlight(null); // Restore materials before applying this frame's state.
-    puzzles.update(dt);player.update(dt,puzzles.door.phase==='OPEN');
-    if(mode==='ar')ar.update(frame);
+    puzzles.update(dt);player.update(mode==='ar'?0:dt,puzzles.door.phase==='OPEN');
+    if(mode==='ar')ar.update(frame,dt);
     if(mode==='web'&&player.position.x>1.85&&player.position.x<3.45&&player.position.z< -6.1&&!puzzles.escaped)puzzles.dispatch({type:'escape'});
     bunker.sync(puzzles,dt);lighting.update(puzzles,dt,mode);if(mode==='vr')vr.update(dt);interaction.update();audio.update(puzzles);void ending.update(puzzles);
     renderer.render(scene,camera);

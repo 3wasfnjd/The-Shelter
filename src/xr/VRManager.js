@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {thumbstickAxes} from './XRInput.js';
 
 export class VRManager {
   constructor(renderer,scene,bunker,player,interaction,puzzles,enterMode,exitMode,notice) {
@@ -62,12 +63,13 @@ export class VRManager {
   }
   update(dt) {
     if(!this.session)return;
+    this.rig.updateMatrixWorld(true);this.renderer.xr.updateCamera(this.camera);
     let highlighted=null;
     for(const controller of this.controllers){
-      const source=this.sources.get(controller);if(!source)continue;
-      const axes=source.gamepad?.axes??[];
-      if(source.handedness==='left'&&axes.length>=4){
-        const x=Math.abs(axes[2])>.15?axes[2]:0,z=Math.abs(axes[3])>.15?axes[3]:0;
+      const source=this.sources.get(controller)??this.session.inputSources[this.controllers.indexOf(controller)];if(!source)continue;
+      const axes=thumbstickAxes(source.gamepad);
+      if(source.handedness==='left'&&axes.length===2){
+        const x=Math.abs(axes[0])>.15?axes[0]:0,z=Math.abs(axes[1])>.15?axes[1]:0;
         if(x||z){
           const head=this.renderer.xr.getCamera();
           const forward=new THREE.Vector3(0,0,-1).applyQuaternion(head.getWorldQuaternion(new THREE.Quaternion()));forward.y=0;forward.normalize();
@@ -75,14 +77,16 @@ export class VRManager {
           const delta=right.multiplyScalar(x).addScaledVector(forward,-z).clampLength(0,1).multiplyScalar(dt*1.6);
           const headPosition=head.getWorldPosition(new THREE.Vector3());const next=headPosition.clone();
           this.player.move(next,delta,this.puzzles.door.phase==='OPEN');this.rig.position.add(next.sub(headPosition));
+          this.rig.updateMatrixWorld(true);this.renderer.xr.updateCamera(this.camera);
         }
       }
-      if(source.handedness==='right'&&axes.length>=4){
-        if(Math.abs(axes[2])<.3)this.snapReady=true;
-        if(Math.abs(axes[2])>.7&&this.snapReady){
+      if(source.handedness==='right'&&axes.length===2){
+        if(Math.abs(axes[0])<.3)this.snapReady=true;
+        if(Math.abs(axes[0])>.7&&this.snapReady){
           const head=this.renderer.xr.getCamera().getWorldPosition(new THREE.Vector3());
-          this.rig.rotation.y-=Math.sign(axes[2])*Math.PI/6;this.rig.updateMatrixWorld(true);
+          this.rig.rotation.y-=Math.sign(axes[0])*Math.PI/6;this.rig.updateMatrixWorld(true);this.renderer.xr.updateCamera(this.camera);
           const after=this.renderer.xr.getCamera().getWorldPosition(new THREE.Vector3());this.rig.position.add(head.sub(after));this.snapReady=false;
+          this.rig.updateMatrixWorld(true);this.renderer.xr.updateCamera(this.camera);
         }
       }
       const target=this.target(controller);if(target&&this.interaction.reachable(target,this.position.clone()))highlighted=target;
@@ -108,6 +112,7 @@ export class VRManager {
     }
     this.interaction.highlight(highlighted);
     const head=this.renderer.xr.getCamera().getWorldPosition(new THREE.Vector3());
+    this.player.position.set(head.x,0,head.z);
     if(head.x>1.85&&head.x<3.45&&head.z< -6.1)this.puzzles.dispatch({type:'escape'});
   }
 }
