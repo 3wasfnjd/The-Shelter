@@ -43,3 +43,32 @@ test('AR overlay taps cannot place the room; controller selection uses two steps
  ar.overlay=false;ar.select({});assert.equal(ar.surfaceLocked,true);assert.equal(ar.placed,false);
  ar.select({});assert.equal(ar.placed,true);
 });
+
+test('AR follows a route around furniture and accepts another destination',async()=>{
+ const {roomPath}=await import('../src/systems/RoomNavigation.js');
+ const player=Object.create(PlayerController.prototype);
+ player.position=new THREE.Vector3(0,0,2);player.radius=.25;
+ player.bunker={colliders:[{x0:-1,x1:1,z0:-.6,z1:.6}],player:{rotation:{}}};
+ player.walk=player.idle={setEffectiveWeight(){}};
+ const ar=Object.create(ARManager.prototype);ar.interaction={player};ar.puzzles={door:{phase:'LOCKED'},dispatch(){assert.fail('no premature escape');}};
+ for(const goal of [new THREE.Vector3(0,0,-2),new THREE.Vector3(2,0,2)]){
+  ar.route=roomPath(player,goal,false);assert.ok(ar.route.length);
+  ar.destination=ar.route.shift();const first=ar.destination;ar.movePlayer(0);assert.equal(ar.destination,first);
+  for(let i=0;i<600&&(ar.destination||ar.route.length);i++){ar.movePlayer(1/60);assert.ok(player.canStand(player.position.x,player.position.z,false));}
+  assert.ok(player.position.distanceTo(goal)<.04,`stopped at ${player.position.toArray()}`);
+ }
+ assert.deepEqual(roomPath(player,new THREE.Vector3(0,0,0),false),[]);
+});
+test('AR thumbstick moves continuously in rotated miniature coordinates',()=>{
+ const player=Object.create(PlayerController.prototype);player.radius=.25;player.position=new THREE.Vector3(0,0,2);
+ player.bunker={colliders:[],player:{rotation:{}}};player.walk=player.idle={setEffectiveWeight(){}};
+ const root=new THREE.Group();root.rotation.y=Math.PI/2;root.scale.setScalar(.1);
+ const head=new THREE.PerspectiveCamera();head.updateMatrixWorld();
+ const source={handedness:'left',gamepad:{axes:[0,0,0,-1]}};
+ const ar=Object.create(ARManager.prototype);
+ Object.assign(ar,{session:{inputSources:[source]},interaction:{player},bunker:{root},renderer:{xr:{updateCamera(){},getCamera(){return head;}}},puzzles:{door:{phase:'LOCKED'},dispatch(){assert.fail();}},route:[new THREE.Vector3()],destination:new THREE.Vector3()});
+ for(let i=0;i<30;i++)assert.equal(ar.moveWithStick(1/60),true);
+ assert.ok(player.position.x>1);assert.ok(Math.abs(player.position.z-2)<.001);assert.equal(ar.destination,null);
+ source.gamepad.axes=[0,0,0,0];assert.equal(ar.moveWithStick(1/60),false);
+ source.gamepad.axes=[0,0,0,1];assert.equal(ar.moveWithStick(1/60),true);
+});

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {thumbstickAxes} from './XRInput.js';
+import {roomPath} from '../systems/RoomNavigation.js';
 
 export class ARManager {
   constructor(renderer,bunker,interaction,puzzles,enterMode,exitMode,notice) {
@@ -19,7 +20,7 @@ export class ARManager {
     this.starting=true;let session;
     try{
       session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['local-floor','dom-overlay'],domOverlay:{root:document.body}});
-      this.session=session;this.placed=false;this.hasPose=false;this.destination=null;this.surfaceLocked=false;this.scale=.1;this.yaw=0;
+      this.session=session;this.placed=false;this.hasPose=false;this.destination=null;this.route=[];this.surfaceLocked=false;this.scale=.1;this.yaw=0;
       session.addEventListener('end',()=>this.end(),{once:true});
       this.renderer.xr.setReferenceSpaceType('local');
       this.enterMode('ar',this.camera);this.bunker.root.visible=false;
@@ -30,7 +31,8 @@ export class ARManager {
       if(this.session!==session){source?.cancel();return;}
       this.hitSource=source;
       if(!source)throw new Error('Hit testing unavailable');
-      session.addEventListener('select',event=>this.select(event));
+      session.addEventListener('selectstart',event=>{if(this.placed)this.select(event);});
+      session.addEventListener('select',event=>{if(!this.placed)this.select(event);});
       this.notice(this.overlay?'اختر سطحًا، واضبط الحجم والاتجاه ثم ثبّت الغرفة.':'الزناد لاختيار السطح ثم للتثبيت. العصا اليسرى للحجم واليمنى للاتجاه.');
     }catch(error){if(session)await session.end();this.notice(`تعذر بدء AR: ${error.message}`);}
     finally{this.starting=false;}
@@ -65,27 +67,53 @@ export class ARManager {
     const local=this.bunker.root.worldToLocal(hit.point.clone());
     const player=this.interaction.player;
     if(Math.abs(local.y)>.18||!player.canStand(local.x,local.z,this.puzzles.door.phase==='OPEN'))return;
-    this.destination=local;
+    const route=roomPath(player,local,this.puzzles.door.phase==='OPEN');
+    if(!route.length){this.notice('هذا المكان غير قابل للوصول؛ اختر مساحة خالية على الأرضية.');return;}
+    this.route=route;this.destination=this.route.shift();
   }
   movePlayer(dt){
     const player=this.interaction.player;
-    if(!this.destination)return;
+    if(!this.destination||dt<=0)return;
     const delta=this.destination.clone().sub(player.position);delta.y=0;
     const distance=delta.length();
-    if(distance<.08){this.destination=null;return;}
+    if(distance<.025){this.destination=this.route?.shift()??null;return;}
     delta.multiplyScalar(Math.min(distance,dt*2.2)/distance);
     const before=player.position.clone();
     player.move(player.position,delta,this.puzzles.door.phase==='OPEN');
     const moved=before.distanceToSquared(player.position)>.000001;
     if(moved)player.bunker.player.rotation.y=Math.atan2(delta.x,delta.z);
-    else this.destination=null;
+    else {this.destination=null;this.route=[];}
     player.walk.setEffectiveWeight(moved?1:0);player.idle.setEffectiveWeight(moved?0:1);
     if(player.position.x>1.85&&player.position.x<3.45&&player.position.z< -6.1)this.puzzles.dispatch({type:'escape'});
   }
 
+  moveWithStick(dt){
+    const source=Array.from(this.session.inputSources).find(source=>source.handedness==='left'&&thumbstickAxes(source.gamepad).length===2);
+    if(!source||dt<=0)return false;
+    const [x,y]=thumbstickAxes(source.gamepad);if(Math.hypot(x,y)<.15)return false;
+    this.route=[];this.destination=null;
+    const player=this.interaction.player,root=this.bunker.root;
+    root.updateMatrixWorld(true);this.renderer.xr.updateCamera(this.camera);
+    const head=this.renderer.xr.getCamera();
+    const forward=new THREE.Vector3(0,0,-1).applyQuaternion(head.getWorldQuaternion(new THREE.Quaternion()));
+    forward.applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion()).invert());forward.y=0;
+    if(forward.lengthSq()<.001)forward.set(0,0,-1);else forward.normalize();
+    const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0));
+    const delta=right.multiplyScalar(x).addScaledVector(forward,-y).clampLength(0,1).multiplyScalar(dt*2.2);
+    const before=player.position.clone();player.move(player.position,delta,this.puzzles.door.phase==='OPEN');
+    const moved=before.distanceToSquared(player.position)>.000001;
+    if(moved)player.bunker.player.rotation.y=Math.atan2(delta.x,delta.z);
+    player.walk.setEffectiveWeight(moved?1:0);player.idle.setEffectiveWeight(moved?0:1);
+    if(player.position.x>1.85&&player.position.x<3.45&&player.position.z< -6.1)this.puzzles.dispatch({type:'escape'});
+    return true;
+  }
+
   update(frame,dt=0){
     if(!this.session||!frame)return;
-    if(this.placed){this.movePlayer(dt);this.interaction.player.mixer.update(dt);return;}
+    if(this.placed){
+      if(!this.moveWithStick(dt))this.movePlayer(dt);
+      this.interaction.player.mixer.update(dt);return;
+    }
     if(!this.hitSource)return;
     for(const source of this.session.inputSources){
       const axes=thumbstickAxes(source.gamepad);if(axes.length!==2)continue;
@@ -111,7 +139,7 @@ export class ARManager {
   confirmPlacement(){
     if(!this.session||!this.surfaceLocked||!this.hasPose||this.placed)return;
     this.applyPreview();this.placed=true;this.hitSource?.cancel();this.hitSource=null;this.ui.hidden=true;
-    this.notice('حدد مكانًا على أرضية الغرفة لتحريك الشخصية، أو المس جهازًا للتفاعل.');
+    this.notice('حرّك الشخصية بالعصا اليسرى، أو حدد الأرضية بالزناد. اضغط الجهاز للتفاعل.');
   }
   refreshUI(){
     this.surfaceButton.disabled=!this.hasPose&&!this.surfaceLocked;
