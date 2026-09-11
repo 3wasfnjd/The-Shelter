@@ -41,3 +41,6 @@ html,body,button,#controls,#modes,#context-card{touch-action:manipulation}
 #joystick #stick{left:26px;top:26px}
 
 .ending-copy .ending-credit{font-size:13px;color:#eed39b;margin:0 0 12px}
+
+#ar-placement{position:fixed;z-index:20;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(360px,94vw);padding:12px;background:#18281eee;border:1px solid #899275;border-radius:10px;touch-action:manipulation}
+#ar-placement p{margin:0 0 8px;font-size:13px}#ar-placement label{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0}#ar-placement input{flex:1;min-width:0}#ar-placement output{min-width:48px}#ar-placement button{padding:8px 12px;font-size:13px}

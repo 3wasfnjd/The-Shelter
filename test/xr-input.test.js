@@ -24,3 +24,22 @@ test('AR destination moves the character within collisions',()=>{
  for(let i=0;i<120;i++)ar.movePlayer(1/60);
  assert.ok(player.position.z<2&&player.position.z>=.85);assert.equal(ar.destination,null);
 });
+test('AR placement requires a selected surface and preserves scale and rotation',()=>{
+ const ar=Object.create(ARManager.prototype);let cancelled=0;
+ Object.assign(ar,{session:{},placed:false,hasPose:false,surfaceLocked:false,scale:.15,yaw:Math.PI/2,previewPose:new THREE.Matrix4().makeTranslation(1,2,3),bunker:{root:new THREE.Group()},ui:{hidden:false},hitSource:{cancel(){cancelled++;}},refreshUI(){},notice(){}});
+ ar.confirmPlacement();assert.equal(ar.placed,false);
+ ar.lockSurface();assert.equal(ar.surfaceLocked,false);
+ ar.hasPose=true;ar.lockSurface();ar.applyPreview();
+ assert.equal(ar.surfaceLocked,true);assert.deepEqual(ar.bunker.root.position.toArray(),[1,2,3]);
+ assert.equal(ar.bunker.root.scale.x,.15);
+ assert.ok(new THREE.Vector3(0,0,1).applyQuaternion(ar.bunker.root.quaternion).distanceTo(new THREE.Vector3(1,0,0))<1e-6);
+ ar.confirmPlacement();assert.equal(ar.placed,true);assert.equal(ar.ui.hidden,true);assert.equal(cancelled,1);
+ ar.confirmPlacement();assert.equal(cancelled,1);
+});
+test('AR overlay taps cannot place the room; controller selection uses two steps',()=>{
+ const ar=Object.create(ARManager.prototype);
+ Object.assign(ar,{session:{},placed:false,hasPose:true,surfaceLocked:false,overlay:true,refreshUI(){},confirmPlacement(){this.placed=true;}});
+ ar.select({});assert.equal(ar.surfaceLocked,false);assert.equal(ar.placed,false);
+ ar.overlay=false;ar.select({});assert.equal(ar.surfaceLocked,true);assert.equal(ar.placed,false);
+ ar.select({});assert.equal(ar.placed,true);
+});

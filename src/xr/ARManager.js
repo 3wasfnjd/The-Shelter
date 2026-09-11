@@ -1,8 +1,17 @@
 import * as THREE from 'three';
+import {thumbstickAxes} from './XRInput.js';
 
 export class ARManager {
   constructor(renderer,bunker,interaction,puzzles,enterMode,exitMode,notice) {
     Object.assign(this,{renderer,bunker,interaction,puzzles,enterMode,exitMode,notice});
+    this.ui=document.querySelector('#ar-placement');
+    this.sizeInput=document.querySelector('#ar-size');this.angleInput=document.querySelector('#ar-angle');
+    this.surfaceButton=document.querySelector('#ar-surface');this.placeButton=document.querySelector('#ar-place');
+    this.ui.addEventListener('beforexrselect',event=>event.preventDefault());
+    this.sizeInput.addEventListener('input',()=>{this.scale=Number(this.sizeInput.value);this.applyPreview();});
+    this.angleInput.addEventListener('input',()=>{this.yaw=THREE.MathUtils.degToRad(Number(this.angleInput.value));this.applyPreview();});
+    this.surfaceButton.addEventListener('click',()=>{if(this.surfaceLocked){this.surfaceLocked=false;this.hasPose=false;}else this.lockSurface();this.refreshUI();});
+    this.placeButton.addEventListener('click',()=>this.confirmPlacement());
     this.camera=new THREE.PerspectiveCamera(60,1,.01,50);this.ray=new THREE.Raycaster();this.previewPose=new THREE.Matrix4();
   }
   async start(){
@@ -10,22 +19,24 @@ export class ARManager {
     this.starting=true;let session;
     try{
       session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['local-floor','dom-overlay'],domOverlay:{root:document.body}});
-      this.session=session;this.placed=false;this.hasPose=false;this.destination=null;
+      this.session=session;this.placed=false;this.hasPose=false;this.destination=null;this.surfaceLocked=false;this.scale=.1;this.yaw=0;
       session.addEventListener('end',()=>this.end(),{once:true});
       this.renderer.xr.setReferenceSpaceType('local');
       this.enterMode('ar',this.camera);this.bunker.root.visible=false;
       await this.renderer.xr.setSession(session);
+      this.overlay=!!session.domOverlayState;this.ui.hidden=!this.overlay;this.refreshUI();
       const viewer=await session.requestReferenceSpace('viewer');
       const source=await session.requestHitTestSource({space:viewer});
       if(this.session!==session){source?.cancel();return;}
       this.hitSource=source;
       if(!source)throw new Error('Hit testing unavailable');
       session.addEventListener('select',event=>this.select(event));
-      this.notice('وجّه الجهاز إلى سطح مستوٍ، ثم اضغط لتثبيت الملجأ.');
+      this.notice(this.overlay?'اختر سطحًا، واضبط الحجم والاتجاه ثم ثبّت الغرفة.':'الزناد لاختيار السطح ثم للتثبيت. العصا اليسرى للحجم واليمنى للاتجاه.');
     }catch(error){if(session)await session.end();this.notice(`تعذر بدء AR: ${error.message}`);}
     finally{this.starting=false;}
   }
   end(){
+    this.ui.hidden=true;this.surfaceLocked=false;
     this.hitSource?.cancel();this.hitSource=null;this.session=null;this.placed=false;
     this.bunker.root.position.set(0,0,0);this.bunker.root.quaternion.identity();this.bunker.root.scale.setScalar(1);this.bunker.root.visible=true;
     this.exitMode();
@@ -33,8 +44,8 @@ export class ARManager {
   select(event){
     if(!this.session)return;
     if(!this.placed){
-      if(!this.hasPose)return;
-      this.placed=true;this.hitSource?.cancel();this.hitSource=null;this.notice('حدد مكانًا على أرضية الغرفة لتحريك الشخصية، أو المس جهازًا للتفاعل.');return;
+      if(!this.overlay){if(this.surfaceLocked)this.confirmPlacement();else this.lockSurface();}
+      return;
     }
     const reference=this.renderer.xr.getReferenceSpace();const pose=event.frame.getPose(event.inputSource.targetRaySpace,reference);
     if(!pose)return;
@@ -76,11 +87,39 @@ export class ARManager {
     if(!this.session||!frame)return;
     if(this.placed){this.movePlayer(dt);this.interaction.player.mixer.update(dt);return;}
     if(!this.hitSource)return;
-    const hits=frame.getHitTestResults(this.hitSource);const pose=hits[0]?.getPose(this.renderer.xr.getReferenceSpace());
-    this.hasPose=!!pose;this.bunker.root.visible=this.hasPose;
-    if(!pose)return;
-    this.previewPose.fromArray(pose.transform.matrix);
+    for(const source of this.session.inputSources){
+      const axes=thumbstickAxes(source.gamepad);if(axes.length!==2)continue;
+      if(source.handedness==='left'&&Math.abs(axes[1])>.2)this.scale=THREE.MathUtils.clamp(this.scale-axes[1]*dt*.04,.06,.18);
+      if(source.handedness==='right'&&Math.abs(axes[0])>.2)this.yaw+=axes[0]*dt;
+    }
+    this.yaw=THREE.MathUtils.euclideanModulo(this.yaw+Math.PI,Math.PI*2)-Math.PI;
+    if(!this.surfaceLocked){
+      const hits=frame.getHitTestResults(this.hitSource);
+      const pose=hits.map(hit=>hit.getPose(this.renderer.xr.getReferenceSpace())).find(pose=>pose&&new THREE.Vector3(0,1,0).transformDirection(new THREE.Matrix4().fromArray(pose.transform.matrix)).y>.9);
+      this.hasPose=!!pose;this.bunker.root.visible=this.hasPose;
+      if(pose)this.previewPose.fromArray(pose.transform.matrix);
+    }
+    this.applyPreview();this.refreshUI();
+  }
+  applyPreview(){
+    if(!this.hasPose||this.placed)return;
     this.previewPose.decompose(this.bunker.root.position,this.bunker.root.quaternion,this.bunker.root.scale);
-    this.bunker.root.scale.setScalar(.1); // 1.1 m room length, 1.25 m including exit corridor.
+    this.bunker.root.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),this.yaw));
+    this.bunker.root.scale.setScalar(this.scale);this.bunker.root.updateMatrixWorld(true);
+  }
+  lockSurface(){if(this.hasPose&&!this.placed)this.surfaceLocked=true;this.refreshUI();}
+  confirmPlacement(){
+    if(!this.session||!this.surfaceLocked||!this.hasPose||this.placed)return;
+    this.applyPreview();this.placed=true;this.hitSource?.cancel();this.hitSource=null;this.ui.hidden=true;
+    this.notice('حدد مكانًا على أرضية الغرفة لتحريك الشخصية، أو المس جهازًا للتفاعل.');
+  }
+  refreshUI(){
+    this.surfaceButton.disabled=!this.hasPose&&!this.surfaceLocked;
+    this.surfaceButton.textContent=this.surfaceLocked?'اختيار سطح آخر':'اختيار هذا السطح';
+    this.placeButton.disabled=!this.surfaceLocked;
+    document.querySelector('#ar-surface-status').textContent=this.surfaceLocked?'السطح محدد — اضبط الحجم والاتجاه ثم ثبّت.':this.hasPose?'سطح أفقي متاح — يمكنك اختياره.':'وجّه الجهاز إلى سطح أفقي.';
+    this.sizeInput.value=this.scale;this.angleInput.value=THREE.MathUtils.radToDeg(this.yaw);
+    document.querySelector('#ar-size-value').textContent=`${Math.round(this.scale*1000)}%`;
+    document.querySelector('#ar-angle-value').textContent=`${Math.round(THREE.MathUtils.radToDeg(this.yaw))}°`;
   }
 }
