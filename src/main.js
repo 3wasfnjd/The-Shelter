@@ -106,4 +106,6 @@ async function boot(){
     renderer.render(scene,camera);
   });
 }
-boot().catch(error=>{console.error(error);blocked('تعذر تحميل غرفة التحكم.',[error.message]);});
+(new URLSearchParams(location.search).get('room-preview')==='time'
+  ? import('./TimeRoomPreview.js').then(module=>module.startTimeRoomPreview())
+  : boot()).catch(error=>{console.error(error);blocked('تعذر تحميل غرفة التحكم.',[error.message]);});

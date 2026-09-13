@@ -1,0 +1,14 @@
+import {NodeIO} from '@gltf-transform/core';
+import {ALL_EXTENSIONS} from '@gltf-transform/extensions';
+import {dedup,prune,weld,quantize,textureCompress} from '@gltf-transform/functions';
+import sharp from 'sharp';
+import {mkdir,stat} from 'node:fs/promises';
+const input=process.argv[2];
+if(!input)throw new Error('Pass the original time-room.glb path');
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
+const doc=await io.read(input);
+await doc.transform(textureCompress({encoder:sharp,targetFormat:'webp',resize:[512,512],quality:80}));
+await doc.transform(dedup(),weld(),quantize(),prune());
+await mkdir('public/assets/previews',{recursive:true});
+const output='public/assets/previews/time-room.glb';await io.write(output,doc);
+console.log({output,bytes:(await stat(output)).size});

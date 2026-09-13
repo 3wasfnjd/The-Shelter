@@ -1,0 +1,5 @@
+Time-Room by Claudio (https://sketchfab.com/Claudio.Cotto)
+Source: https://sketchfab.com/3d-models/time-room-89ae1391a06f4aef9c9913944d0c4b1c
+License declared in original GLB: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Changes: textures resized to at most 512px and encoded as WebP quality 80; deduplication, welding and vertex quantization. No triangle simplification. Roof hidden by default only in the preview.
