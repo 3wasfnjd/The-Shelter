@@ -1,5 +1,20 @@
 import * as THREE from 'three';
 import {TouchJoystick} from './systems/TouchJoystick.js';
+import {ROOM_FLOOR,EXIT_CORRIDOR} from './assets.js';
+
+// Point-in-polygon (ray casting), plus an inward shrink toward the centroid so the
+// player's collision radius doesn't clip through the pentagon's walls.
+const floorCenter=ROOM_FLOOR.reduce((sum,[x,z])=>[sum[0]+x/ROOM_FLOOR.length,sum[1]+z/ROOM_FLOOR.length],[0,0]);
+const shrink=.94;
+const shrunkFloor=ROOM_FLOOR.map(([x,z])=>[floorCenter[0]+(x-floorCenter[0])*shrink,floorCenter[1]+(z-floorCenter[1])*shrink]);
+function inPolygon(x,z,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const [xi,zi]=poly[i],[xj,zj]=poly[j];
+    if((zi>z)!==(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)inside=!inside;
+  }
+  return inside;
+}
 
 export class PlayerController {
   constructor(bunker,canvas) {
@@ -46,8 +61,9 @@ export class PlayerController {
   }
   canStand(x,z,doorOpen=false) {
     const r=this.radius;
-    const inRoom=x>-4.5+r&&x<4.5-r&&z>-5.5+r&&z<5.5-r;
-    const inExit=doorOpen&&x>1.6+r&&x<3.7-r&&z>=-7&&z< -4.8;
+    const [ex0,ez0,ex1,ez1]=EXIT_CORRIDOR;
+    const inRoom=inPolygon(x,z,shrunkFloor);
+    const inExit=doorOpen&&x>ex0+r&&x<ex1-r&&z>ez0+r&&z<ez1-r;
     if(!inRoom&&!inExit)return false;
     return !this.bunker.colliders.some(b=>x>b.x0-r&&x<b.x1+r&&z>b.z0-r&&z<b.z1+r);
   }
@@ -73,7 +89,7 @@ export class PlayerController {
     const rotation=this.camera.quaternion.clone().invert();let distance=1;
     const tan=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));
     const margin=this.focusBounds?1.2:1.07;
-    const bounds=this.focusBounds??new THREE.Box3(new THREE.Vector3(-4.8,0,-7),new THREE.Vector3(4.8,3.8,5.8));
+    const bounds=this.focusBounds??new THREE.Box3(new THREE.Vector3(-7.5,0,-5),new THREE.Vector3(5.5,3.8,5));
     for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
       const p=new THREE.Vector3(x,y,z).sub(this.target).applyQuaternion(rotation);
       distance=Math.max(distance,p.z+Math.abs(p.x)/(tan*this.camera.aspect)*margin,p.z+Math.abs(p.y)/tan*margin);

@@ -15,7 +15,8 @@ export async function startRoomPreview(assets,loaded) {
   const scene = new THREE.Scene();scene.background=new THREE.Color(0x232b27);
   const root=new THREE.Group();scene.add(root);
   const shell=loaded.get('shell').root;
-  shell.getObjectByName('FrontWall').visible=false;shell.getObjectByName('Roof').visible=false;
+  const frontWall=shell.getObjectByName('FrontWall'),roof=shell.getObjectByName('Roof');
+  if(frontWall)frontWall.visible=false;if(roof)roof.visible=false;
   root.add(shell,loaded.get('props').root,furniture.scene);
   const player=loaded.get('player').root;player.position.set(0,0,3.8);root.add(player);
   root.traverse(object=>{if(object.isMesh){object.castShadow=true;object.receiveShadow=true;}});

@@ -101,7 +101,7 @@ async function boot(){
     interaction.highlight(null); // Restore materials before applying this frame's state.
     puzzles.update(dt);player.update(mode==='ar'?0:dt,puzzles.door.phase==='OPEN');
     if(mode==='ar')ar.update(frame,dt);
-    if(mode==='web'&&player.position.x>1.85&&player.position.x<3.45&&player.position.z< -6.1&&!puzzles.escaped)puzzles.dispatch({type:'escape'});
+    if(mode==='web'&&player.position.x< -7&&player.position.z>-1.3&&player.position.z<1.2&&!puzzles.escaped)puzzles.dispatch({type:'escape'});
     bunker.sync(puzzles,dt);lighting.update(puzzles,dt,mode);if(mode==='vr')vr.update(dt);interaction.update();audio.update(puzzles);void ending.update(puzzles);
     renderer.render(scene,camera);
   });

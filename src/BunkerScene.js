@@ -10,6 +10,7 @@ export class BunkerScene {
       const asset = loaded.get(slot.id);
       if (!asset) throw new Error(`Required GLB missing: ${slot.file}`);
       asset.root.position.fromArray(slot.position); asset.root.rotation.y = slot.rotation ?? 0;
+      if (slot.scale) asset.root.scale.setScalar(slot.scale);
       this.root.add(asset.root); this.models.set(slot.id, asset);
       if (slot.collider) {
         // Collider coordinates are room-axis aligned offsets, not visible meshes.
@@ -25,7 +26,7 @@ export class BunkerScene {
       if(prop)prop.position.add(deskOffset);
     }
     this.player = this.models.get('player').root;
-    this.exit = new THREE.Vector3(2.65,0,-6.35);
+    this.exit = new THREE.Vector3(-6.2,0,0);
     this.registerInteractions();
     this.screen = this.prepareScreen('console','CRTScreen');
     this.keyScreen = this.prepareScreen('door','KeyDisplay');
@@ -105,8 +106,10 @@ export class BunkerScene {
   }
   setMode(mode) {
     this.player.visible=mode!=='vr';
-    this.node('shell','FrontWall').visible=mode==='vr';
-    this.node('shell','Roof').visible=mode==='vr';
+    // The salvaged shell is one undivided mesh (no separate wall/roof nodes to hide in VR).
+    const frontWall=this.node('shell','FrontWall'),roof=this.node('shell','Roof');
+    if(frontWall)frontWall.visible=mode==='vr';
+    if(roof)roof.visible=mode==='vr';
   }
   sync(puzzles,dt) {
     this.animated=this.animated.filter(item=>{

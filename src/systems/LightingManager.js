@@ -6,11 +6,11 @@ export class LightingManager {
     this.key.castShadow=true;this.key.shadow.mapSize.set(1024,1024);
     Object.assign(this.key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:.1,far:35});
     this.key.shadow.bias=-.0005;this.key.shadow.normalBias=.025;scene.add(this.key);
-    this.practicals=[[-2,3.3,-2],[2,3.3,2]].map(position=>{
+    this.practicals=[[2,3,-2.7],[2,3,2.7]].map(position=>{
       const light=new THREE.PointLight(0xffc47d,0,11,2);light.position.fromArray(position);bunker.root.add(light);return light;
     });
-    this.emergency=new THREE.PointLight(0xff3e25,10,8,2);this.emergency.position.set(-3,2.8,3);bunker.root.add(this.emergency);
-    this.exit=new THREE.PointLight(0xfff5da,0,8,2);this.exit.position.set(2.65,2,-6.4);bunker.root.add(this.exit);
+    this.emergency=new THREE.PointLight(0xff3e25,10,8,2);this.emergency.position.set(-2,2.8,0);bunker.root.add(this.emergency);
+    this.exit=new THREE.PointLight(0xfff5da,0,8,2);this.exit.position.set(-6.2,2,0);bunker.root.add(this.exit);
   }
   update(puzzles,dt,mode) {
     const t=1-Math.exp(-dt*2);
