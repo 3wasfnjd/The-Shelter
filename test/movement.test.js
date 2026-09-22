@@ -13,8 +13,8 @@ test('movement slides along blockers and cannot tunnel through workbench',()=>{
   const player=controller(),position=new THREE.Vector3(0,0,2);
   player.move(position,new THREE.Vector3(0,0,-4),false);
   assert.ok(position.z>=.85);assert.equal(player.canStand(0,0),false);
-  assert.equal(player.canStand(4.4,2),false);assert.equal(player.canStand(2.65,-6),false);
-  assert.equal(player.canStand(2.65,-6,true),true);assert.equal(player.canStand(0,-6,true),false);
+  assert.equal(player.canStand(4.4,2),false);assert.equal(player.canStand(-6,0),false);
+  assert.equal(player.canStand(-6,0,true),true);assert.equal(player.canStand(-6,3,true),false);
 });
 test('full room fits desktop/mobile frustums at both rotation limits',()=>{
   const player=controller();
