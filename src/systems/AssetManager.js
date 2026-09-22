@@ -1,9 +1,11 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { assetURL } from '../assets.js';
 
 export class AssetManager {
-  constructor() { this.loader = new GLTFLoader(); this.cache = new Map(); }
+  // shelter-room.glb ships EXT_meshopt_compression (58% smaller download, identical geometry).
+  constructor() { this.loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder); this.cache = new Map(); }
   load(file) {
     if (!this.cache.has(file)) this.cache.set(file, this.loader.loadAsync(assetURL(file)));
     return this.cache.get(file);
